@@ -1,4 +1,4 @@
-# REFACTOR FINAL REPORT — speexkit v1.4.10 → v1.4.11
+# REFACTOR FINAL REPORT — SpeexKit v1.4.10 → v1.4.11
 
 ## FASE 1: Dead Code Elimination
 - Removed 3 minified source files reformatted to multi-line
