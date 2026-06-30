@@ -1,5 +1,5 @@
 {
-  "name": "SpeexKit",
+  "name": "speexkit",
   "version": "1.4.12",
   "description": "JavaScript toolkit: NDArray, ML, Stats, validation, functional, date, async, collection, color, error, logger, crypto, path, IO, type, dep-exray. Zero dependencies.",
   "type": "module",
@@ -181,12 +181,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/superdevids/speexjs.git"
+    "url": "git+https://github.com/superdevids/speexkit.git"
   },
   "bugs": {
-    "url": "https://github.com/superdevids/speexjs/issues"
+    "url": "https://github.com/superdevids/speexkit/issues"
   },
-  "homepage": "https://github.com/superdevids/speexjs/tree/master/packages/speexkit",
+  "homepage": "https://github.com/superdevids/speexkit#readme",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
