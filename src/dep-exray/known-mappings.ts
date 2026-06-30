@@ -8,7 +8,6 @@ export interface PackageMapping {
   detectionPattern: string
 }
 
-/** K N O W N_ M A P P I N G S. */
 export const KNOWN_MAPPINGS: PackageMapping[] = [
   {
     name: 'lodash',

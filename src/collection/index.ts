@@ -1045,7 +1045,11 @@ export function fromKeys<K extends string, V>(keys: K[], value: V | ((key: K, in
  * @example paginate([1, 2, 3, 4, 5], 1, 2)
  *          // => { data: [1, 2], total: 5, page: 1, size: 2, totalPages: 3, hasNext: true, hasPrev: false }
  */
-export function paginate<T>(array: T[], page: number = 1, size: number = 10): {
+export function paginate<T>(
+  array: T[],
+  page: number = 1,
+  size: number = 10,
+): {
   data: T[]
   total: number
   page: number

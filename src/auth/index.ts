@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual, randomBytes, createHash } from 'node:crypto'
+import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 
 /**
  * Encodes a string to base64url (RFC 4648 §5).
@@ -31,9 +31,7 @@ function base64urlDecode(str: string): string {
 function parseExpiry(expiresIn: string): number {
   const match = expiresIn.match(/^(\d+)(s|m|h|d)$/)
   if (!match) {
-    throw new Error(
-      `Invalid expiry format: "${expiresIn}". Use e.g. "1h", "30m", "7d".`,
-    )
+    throw new Error(`Invalid expiry format: "${expiresIn}". Use e.g. "1h", "30m", "7d".`)
   }
   const value = Number.parseInt(match[1]!, 10)
   const unit = match[2]!
@@ -50,11 +48,7 @@ function parseExpiry(expiresIn: string): number {
  * @param opts.expiresIn - Relative expiry string (e.g. `"1h"`, `"7d"`). When omitted the token has no `exp` claim.
  * @returns A signed JWT string (three dot-separated base64url parts).
  */
-export async function signJWT(
-  payload: Record<string, unknown>,
-  secret: string,
-  opts?: { expiresIn?: string },
-): Promise<string> {
+export async function signJWT(payload: Record<string, unknown>, secret: string, opts?: { expiresIn?: string }): Promise<string> {
   const header = { alg: 'HS256', typ: 'JWT' }
   const now = Math.floor(Date.now() / 1000)
 
@@ -67,9 +61,7 @@ export async function signJWT(
   const payloadEncoded = base64urlEncode(JSON.stringify(finalPayload))
   const signingInput = `${headerEncoded}.${payloadEncoded}`
 
-  const signature = createHmac('sha256', secret)
-    .update(signingInput)
-    .digest()
+  const signature = createHmac('sha256', secret).update(signingInput).digest()
   const signatureEncoded = signature.toString('base64url')
 
   return `${signingInput}.${signatureEncoded}`
@@ -84,10 +76,7 @@ export async function signJWT(
  * @param secret - The HMAC secret key used to sign the token.
  * @returns The decoded payload if valid, or `null` if the signature is invalid or the token has expired.
  */
-export async function verifyJWT(
-  token: string,
-  secret: string,
-): Promise<Record<string, unknown> | null> {
+export async function verifyJWT(token: string, secret: string): Promise<Record<string, unknown> | null> {
   const parts = token.split('.')
   if (parts.length !== 3) return null
 
@@ -95,9 +84,7 @@ export async function verifyJWT(
   if (!headerEncoded || !payloadEncoded || !signatureEncoded) return null
 
   const signingInput = `${headerEncoded}.${payloadEncoded}`
-  const expectedSig = createHmac('sha256', secret)
-    .update(signingInput)
-    .digest()
+  const expectedSig = createHmac('sha256', secret).update(signingInput).digest()
   const actualSig = Buffer.from(signatureEncoded, 'base64url')
 
   if (expectedSig.length !== actualSig.length) return null
@@ -110,6 +97,11 @@ export async function verifyJWT(
     if (typeof payload.exp === 'number') {
       const now = Math.floor(Date.now() / 1000)
       if (now > payload.exp) return null
+    }
+
+    if (typeof payload.nbf === 'number') {
+      const now = Math.floor(Date.now() / 1000)
+      if (now < payload.nbf) return null
     }
 
     return payload
@@ -127,9 +119,7 @@ export async function verifyJWT(
  * @param token - The JWT string to decode.
  * @returns The decoded payload, or `null` if the token is malformed.
  */
-export function decodeJWT(
-  token: string,
-): Record<string, unknown> | null {
+export function decodeJWT(token: string): Record<string, unknown> | null {
   try {
     const parts = token.split('.')
     if (parts.length !== 3) return null
@@ -156,8 +146,7 @@ export function generatePKCE(): {
   codeChallenge: string
 } {
   const length = 64
-  const chars =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'
   const bytes = randomBytes(length)
   let codeVerifier = ''
   for (let i = 0; i < length; i++) {
@@ -176,9 +165,7 @@ export function generatePKCE(): {
  * @param header - The `Authorization` header value (e.g. `"Basic base64string"`).
  * @returns An object with `username` and `password`, or `null` if the format is invalid.
  */
-export function parseBasicAuth(
-  header: string,
-): { username: string; password: string } | null {
+export function parseBasicAuth(header: string): { username: string; password: string } | null {
   try {
     const match = header.match(/^Basic\s+(.+)$/i)
     if (!match) return null

@@ -1,6 +1,6 @@
 # SpeexKit
 
-JavaScript/TypeScript utility toolkit — 500+ functions, 46 modules, zero dependencies.
+JavaScript/TypeScript utility toolkit — 500+ functions, 48 modules, zero dependencies.
 
 ```bash
 npm install speexkit
@@ -42,6 +42,13 @@ npm install speexkit
 - **Error** — createError, TypedError, MultiError, Result&lt;T,E&gt; (Ok/Err)
 - **Crypto** — generateToken, generateOTP, base64, randomHex, sha256, sha512
 - **IO** — parseCsv, safeJsonParse, readJSONFile, writeJSONFile, watchFile
+- **Auth** — signJWT, verifyJWT, generatePKCE
+- **HTTP** — createHttpClient, interceptors, retry/circuit-breaker integration
+- **Serialize** — MessagePack, base58/62 encoding
+- **Reactive** — signal, computed, effect (framework-agnostic)
+- **Template** — mustache-compatible render/compile
+- **Structures** — Trie, Graph, Heap, BloomFilter, LinkedList, Deque, DisjointSet, Maybe, Either
+- **SVG Charts** — bar, line, scatter, pie chart generators (zero-dep SVG)
 
 ## Quick Examples
 
@@ -119,6 +126,12 @@ isStrongPassword('P@ssw0rd!');
 | speexkit/diff | deepDiff, applyPatch, merge |
 | speexkit/storage | localStorage, sessionStorage, memoryStorage wrappers |
 | speexkit/expansion | env expansion, nested expansion, template expansion |
+| speexkit/auth | signJWT, verifyJWT, decodeJWT, generatePKCE, parseBasicAuth |
+| speexkit/http | createHttpClient, middleware, interceptors, RateLimitMiddleware |
+| speexkit/serialize | encodeMsgPack, decodeMsgPack, encodeBase58/62, decodeBase58/62 |
+| speexkit/reactive | signal, computed, effect — framework-agnostic reactivity |
+| speexkit/template | render, compile — mustache-compatible template engine |
+| speexkit/structures | Trie, Graph, Heap, PriorityQueue, LinkedList, Deque, BloomFilter, DisjointSet, Maybe, Either |
 | speexkit/dep-exray | Dependency scanner + CLI (npx dep-exray .) |
 | speexkit/coverage-boost | Coverage heuristics and utilities |
 | speexkit/analyzer | Code analysis utilities |
@@ -133,6 +146,10 @@ isStrongPassword('P@ssw0rd!');
 | NDArray (NumPy) | YES | NO | YES (heavy) | NO |
 | ML (scikit-learn) | YES | NO | NO | NO |
 | Stats (SciPy) | YES | NO | NO | NO |
+| Auth (JWT/PKCE) | YES | NO | NO | NO |
+| Schema validation | YES | NO | NO | NO |
+| Reactive signals | YES | NO | NO | NO |
+| SVG chart generators | YES | NO | NO | NO |
 | Async concurrency | YES | NO | NO | NO |
 | 28 validators | YES | NO | NO | NO |
 | Circuit breaker / Bulkhead | YES | NO | NO | NO |

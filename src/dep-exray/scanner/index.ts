@@ -1,7 +1,7 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
-import { basename, join } from 'node:path'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { basename, dirname, join, relative } from 'node:path'
 import { KNOWN_CVES, KNOWN_MAPPINGS, type PackageMapping } from '../known-mappings.js'
-import type { ReplacementSuggestion, ScannerConfig, ScanResult, SecurityIssue } from '../types.js'
+import type { BundleSizeEntry, BundleSizeResult, ReplacementSuggestion, ScannerConfig, ScanResult, SecurityIssue } from '../types.js'
 
 interface LockfilePackages {
   [key: string]: { version?: string; dependencies?: Record<string, string> } | undefined
@@ -128,6 +128,93 @@ function parseSize(value: string): number {
   if (!match[2]) return 0
   if (match[2].toUpperCase() === 'MB') return num * 1024
   return num
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
+  if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${bytes} B`
+}
+
+function collectBundleFiles(dir: string): string[] {
+  const results: string[] = []
+  try {
+    const entries = readdirSync(dir, { withFileTypes: true })
+    for (const entry of entries) {
+      if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === 'coverage') continue
+      const full = join(dir, entry.name)
+      if (entry.isDirectory()) {
+        results.push(...collectBundleFiles(full))
+      } else if (entry.isFile()) {
+        const ext = entry.name.split('.').pop()
+        if (
+          ext === 'js' ||
+          ext === 'mjs' ||
+          ext === 'cjs' ||
+          ext === 'ts' ||
+          ext === 'tsx' ||
+          ext === 'jsx' ||
+          ext === 'css' ||
+          ext === 'map'
+        ) {
+          results.push(full)
+        }
+      }
+    }
+  } catch {
+    // skip inaccessible dirs
+  }
+  return results
+}
+
+export function scanBundleSize(projectPath: string, verbose?: boolean): BundleSizeResult {
+  const distPath = join(projectPath, 'dist')
+  const srcPath = join(projectPath, 'src')
+  const targetPath = existsSync(distPath) ? distPath : existsSync(srcPath) ? srcPath : projectPath
+
+  const files = collectBundleFiles(targetPath)
+  const entries: BundleSizeEntry[] = []
+
+  for (const file of files) {
+    try {
+      const stats = statSync(file)
+      if (stats.isFile()) {
+        entries.push({
+          filePath: relative(projectPath, file),
+          size: stats.size,
+          sizeFormatted: formatBytes(stats.size),
+        })
+      }
+    } catch {
+      // skip unreadable files
+    }
+  }
+
+  entries.sort((a, b) => b.size - a.size)
+
+  const groupedByDir: Record<string, { files: number; totalSize: number; totalSizeFormatted: string }> = {}
+  for (const entry of entries) {
+    const dir = dirname(entry.filePath)
+    if (!groupedByDir[dir]) {
+      groupedByDir[dir] = { files: 0, totalSize: 0, totalSizeFormatted: '' }
+    }
+    groupedByDir[dir]!.files++
+    groupedByDir[dir]!.totalSize += entry.size
+  }
+  for (const dir of Object.keys(groupedByDir)) {
+    groupedByDir[dir]!.totalSizeFormatted = formatBytes(groupedByDir[dir]!.totalSize)
+  }
+
+  const totalSize = entries.reduce((sum, e) => sum + e.size, 0)
+  const limit = verbose ? 30 : 10
+
+  return {
+    totalFiles: entries.length,
+    totalSize,
+    totalSizeFormatted: formatBytes(totalSize),
+    largestFiles: entries.slice(0, limit),
+    groupedByDir,
+  }
 }
 
 export async function scanProject(config: ScannerConfig): Promise<ScanResult> {

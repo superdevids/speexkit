@@ -99,11 +99,7 @@ export function hashString(str: string): number {
  * @param variants - The list of variant names to choose from.
  * @returns One of the variant strings from the `variants` array.
  */
-export function bucketUser(
-  userId: string,
-  experimentId: string,
-  variants: string[],
-): string {
+export function bucketUser(userId: string, experimentId: string, variants: string[]): string {
   const index = hashString(`${experimentId}:${userId}`) % variants.length
   return variants[index]!
 }

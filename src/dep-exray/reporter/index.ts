@@ -1,4 +1,4 @@
-import type { ReplacementSuggestion, ScanResult, SecurityIssue } from '../types.js'
+import type { BundleSizeResult, ReplacementSuggestion, ScanResult, SecurityIssue } from '../types.js'
 
 // ANSI color codes — zero dependencies
 const _ = {
@@ -41,9 +41,11 @@ function confidenceIcon(confidence: ReplacementSuggestion['confidence']): string
   }
 }
 
-export function generateReport(result: ScanResult, jsonOutput?: boolean): string {
+export function generateReport(result: ScanResult, jsonOutput?: boolean, bundleSize?: BundleSizeResult): string {
   if (jsonOutput) {
-    return JSON.stringify(result, null, 2)
+    const output: Record<string, unknown> = { ...result }
+    if (bundleSize) output.bundleSize = bundleSize
+    return JSON.stringify(output, null, 2)
   }
 
   const lines: string[] = []
@@ -68,6 +70,19 @@ export function generateReport(result: ScanResult, jsonOutput?: boolean): string
       `│  ${style('💾 TOTAL SIZE:', [_.white])} ${style(result.totalEstimatedSize, [_.bold])}${' '.repeat(Math.max(1, 42 - result.totalEstimatedSize.length))}│`,
     ),
   )
+
+  const summaryParts: string[] = []
+  summaryParts.push(`${result.directDeps} direct`)
+  summaryParts.push(`${result.transitiveDeps} transitive`)
+  if (result.securityIssues.length > 0) summaryParts.push(`${result.securityIssues.length} security issue(s)`)
+  if (bundleSize) {
+    lines.push(
+      t(
+        `│  ${style('📁 BUNDLE SIZE:', [_.white])} ${style(bundleSize.totalSizeFormatted, [_.bold])} across ${style(String(bundleSize.totalFiles), [_.bold])} files${' '.repeat(Math.max(1, 30 - String(bundleSize.totalFiles).length))}│`,
+      ),
+    )
+    summaryParts.push(`bundle ${bundleSize.totalSizeFormatted}`)
+  }
   lines.push(t(`├${'─'.repeat(58)}┤`))
 
   if (result.highImpactReplacements.length > 0) {
@@ -121,7 +136,69 @@ export function generateReport(result: ScanResult, jsonOutput?: boolean): string
     }
   }
 
+  if (bundleSize) {
+    lines.push(t(`├${'─'.repeat(58)}┤`))
+    lines.push(t(`│  ${style('📁', [_.cyan])} ${style('BUNDLE SIZE ANALYSIS', [_.bold, _.cyan])}${' '.repeat(27)}│`))
+    lines.push(t(`├${'─'.repeat(58)}┤`))
+    lines.push(
+      t(
+        `│  ${style('Total:', [_.white])} ${bundleSize.totalFiles} files, ${bundleSize.totalSizeFormatted}${' '.repeat(Math.max(1, 40 - bundleSize.totalSizeFormatted.length))}│`,
+      ),
+    )
+
+    const dirs = Object.entries(bundleSize.groupedByDir)
+      .sort((a, b) => b[1].totalSize - a[1].totalSize)
+      .slice(0, 8)
+    for (const [dir, info] of dirs) {
+      const label = dir || '(root)'
+      lines.push(
+        t(
+          `│  ${style('📂', [_.dim])} ${label}: ${info.files} files, ${info.totalSizeFormatted}${' '.repeat(Math.max(1, 44 - label.length - info.totalSizeFormatted.length))}│`,
+        ),
+      )
+    }
+
+    lines.push(t(`├${'─'.repeat(58)}┤`))
+    lines.push(t(`│  ${style('LARGEST FILES', [_.bold, _.yellow])}${' '.repeat(36)}│`))
+    for (const entry of bundleSize.largestFiles.slice(0, 5)) {
+      lines.push(
+        t(
+          `│  ${style(entry.sizeFormatted, [_.cyan])}  ${entry.filePath}${' '.repeat(Math.max(1, 47 - entry.filePath.length - entry.sizeFormatted.length))}│`,
+        ),
+      )
+    }
+  }
+
   lines.push(t(`└${'─'.repeat(58)}┘`))
+
+  return lines.join('\n')
+}
+
+export function generateDiagnosticsOutput(result: ScanResult): string {
+  const lines: string[] = []
+
+  const filePath = 'package.json'
+
+  for (const item of result.highImpactReplacements) {
+    lines.push(
+      `${filePath}:1:1 - warning: Dependency '${item.packageName}' can be replaced with '${item.replacement}' (${item.estimatedSizeReduction})`,
+    )
+  }
+
+  for (const item of result.mediumImpactReplacements) {
+    lines.push(
+      `${filePath}:1:1 - warning: Dependency '${item.packageName}' can be replaced with '${item.replacement}' (${item.estimatedSizeReduction})`,
+    )
+  }
+
+  for (const issue of result.securityIssues) {
+    const severity = issue.severity === 'critical' || issue.severity === 'high' ? 'error' : 'warning'
+    lines.push(`${filePath}:1:1 - ${severity}: ${issue.cveId} in '${issue.packageName}' — ${issue.fix}`)
+  }
+
+  if (lines.length === 0) {
+    lines.push(`${filePath}:1:1 - info: No dependency issues found`)
+  }
 
   return lines.join('\n')
 }

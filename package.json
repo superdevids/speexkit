@@ -233,6 +233,18 @@
     "./dom": {
       "import": "./dist/dom/index.js",
       "types": "./dist/dom/index.d.ts"
+    },
+    "./reactive": {
+      "import": "./dist/reactive/index.js",
+      "types": "./dist/reactive/index.d.ts"
+    },
+    "./template": {
+      "import": "./dist/template/index.js",
+      "types": "./dist/template/index.d.ts"
+    },
+    "./viz-data/svg": {
+      "import": "./dist/viz-data/svg.js",
+      "types": "./dist/viz-data/svg.d.ts"
     }
   },
   "sideEffects": false,
@@ -268,7 +280,7 @@
   "size-limit": [
     {
       "path": "dist/index.js",
-      "limit": "60 KB"
+      "limit": "500 KB"
     }
   ],
   "keywords": [

@@ -1561,17 +1561,33 @@ export class NDArray<T = number> {
   /**
    * Get an element at the given multi-dimensional indices.
    *
-   * @param indices - One index per dimension.
-   * @returns The element at the position. Negative indices wrap.
+   * @param indices - One index per dimension, or a single array of flat indices.
+   * @returns The element at the position, or a new NDArray when passing an array of indices.
+   *          Negative indices wrap.
    *
    * @example
    * ```typescript
    * const a = NDArray.from([[1, 2], [3, 4]])
    * a.get(0, 1) // 2
    * a.get(-1, -1) // 4
+   * a.get([0, 3, 2]) // NDArray([1, 4, 3])
    * ```
    */
-  get(...indices: number[]): T {
+  get(...indices: number[]): T
+  get(indices: number[]): NDArray<T>
+  get(...args: [number[]] | number[]): T | NDArray<T> {
+    // Fancy indexing: called with a single array of flat indices
+    if (args.length === 1 && Array.isArray(args[0])) {
+      const idxArr = args[0] as number[]
+      const result = new Array<T>(idxArr.length)
+      for (let i = 0; i < idxArr.length; i++) {
+        const idx = ((idxArr[i]! % this._data.length) + this._data.length) % this._data.length
+        result[i] = this._data[idx]!
+      }
+      return new NDArray<T>(result, [idxArr.length])
+    }
+
+    const indices = args as number[]
     if (indices.length !== this._shape.length) {
       throw new Error(`Expected ${this._shape.length} indices, got ${indices.length}`)
     }
@@ -1583,13 +1599,14 @@ export class NDArray<T = number> {
   /**
    * Set an element at the given multi-dimensional indices. **Mutates the array.**
    *
-   * @param value - New value.
+   * @param value - New value (or NDArray/number[] for fancy indexing).
    * @param indices - One index per dimension. Negative wraps.
    *
    * @example
    * ```typescript
    * const a = NDArray.zeros([2, 2])
    * a.set(5, 0, 1) // a is now [[0, 5], [0, 0]]
+   * a.set(NDArray.from([9, 8]), [0, 3]) // a flat indices 0 and 3 become 9 and 8
    * ```
    */
   set(value: T, ...indices: number[]): void {
@@ -1599,6 +1616,26 @@ export class NDArray<T = number> {
     const normIndices = indices.map((idx, i) => ((idx % this._shape[i]!) + this._shape[i]!) % this._shape[i]!)
     const flatIdx = ravelIndex(normIndices, this._strides)
     this._data[flatIdx] = value
+  }
+
+  /**
+   * Set values at given flat indices. **Mutates the array.**
+   *
+   * @param values - NDArray or number[] of values.
+   * @param indices - Array of flat indices.
+   *
+   * @example
+   * ```typescript
+   * const a = NDArray.zeros([5])
+   * a.setByIndices([9, 8], [0, 4]) // a is now [9, 0, 0, 0, 8]
+   * ```
+   */
+  setByIndices(values: NDArray<number> | number[], indices: number[]): void {
+    const vals = values instanceof NDArray ? values._data : values
+    for (let i = 0; i < Math.min(indices.length, vals.length); i++) {
+      const idx = ((indices[i]! % this._data.length) + this._data.length) % this._data.length
+      this._data[idx] = vals[i] as T
+    }
   }
 
   // ═════════════════════════════════════════════════════════════════════
@@ -1899,6 +1936,588 @@ export class NDArray<T = number> {
     })
 
     return NDArray.concatenate(processed, 0)
+  }
+
+  // ═════════════════════════════════════════════════════════════════════
+  //  Boolean / Fancy Indexing
+  // ═════════════════════════════════════════════════════════════════════
+
+  /**
+   * Return elements where mask is true (flattened, 1-D result).
+   *
+   * @param mask - Boolean NDArray of the same total size.
+   * @returns 1-D NDArray with elements where mask is true.
+   *
+   * @example
+   * ```typescript
+   * const a = NDArray.from([1, 2, 3, 4])
+   * a.getByMask(NDArray.from([true, false, true, false])) // [1, 3]
+   * ```
+   */
+  getByMask(mask: NDArray<boolean>): NDArray<T> {
+    if (mask._data.length !== this._data.length) {
+      throw new Error('Mask array must have the same total size')
+    }
+    const result: T[] = []
+    for (let i = 0; i < this._data.length; i++) {
+      if (mask._data[i]) {
+        result.push(this._data[i]!)
+      }
+    }
+    return new NDArray<T>(result, [result.length])
+  }
+
+  /**
+   * Set elements where mask is true. **Mutates the array.**
+   *
+   * @param mask - Boolean NDArray of the same total size.
+   * @param values - NDArray or scalar value to assign where mask is true.
+   *
+   * @example
+   * ```typescript
+   * const a = NDArray.zeros([4])
+   * a.setByMask(NDArray.from([true, false, true, false]), NDArray.from([9, 8]))
+   * // a is now [9, 0, 8, 0]
+   * ```
+   */
+  setByMask(mask: NDArray<boolean>, values: NDArray<T> | number): void {
+    if (mask._data.length !== this._data.length) {
+      throw new Error('Mask array must have the same total size')
+    }
+    const vals = typeof values === 'number' ? [values] : values._data
+    let vi = 0
+    for (let i = 0; i < this._data.length; i++) {
+      if (mask._data[i]) {
+        if (vi < vals.length) {
+          this._data[i] = vals[vi]! as T
+          vi++
+        }
+      }
+    }
+  }
+
+  // ═════════════════════════════════════════════════════════════════════
+  //  Static 3-Argument where
+  // ═════════════════════════════════════════════════════════════════════
+
+  /**
+   * Return elements chosen from x or y depending on condition.
+   * Supports broadcasting (x or y can be scalars).
+   *
+   * @param condition - Boolean NDArray.
+   * @param x - Value(s) when condition is true (NDArray or scalar).
+   * @param y - Value(s) when condition is false (NDArray or scalar).
+   * @returns NDArray with same broadcast shape as condition.
+   *
+   * @example
+   * ```typescript
+   * const cond = NDArray.from([true, false, true])
+   * NDArray.where(cond, NDArray.from([1, 2, 3]), NDArray.from([10, 20, 30])) // [1, 20, 3]
+   * NDArray.where(cond, 1, 0) // [1, 0, 1]
+   * ```
+   */
+  static where(condition: NDArray<boolean>, x: NDArray<number> | number, y: NDArray<number> | number): NDArray<number> {
+    const result = new Array<number>(condition._data.length)
+    const xIsArr = x instanceof NDArray
+    const yIsArr = y instanceof NDArray
+    const xArr = xIsArr ? (x as NDArray<number>)._data : null
+    const yArr = yIsArr ? (y as NDArray<number>)._data : null
+
+    const condLen = condition._data.length
+    if (xArr && xArr.length !== condLen) {
+      const xShape = (x as NDArray<number>).shape as number[]
+      const yShape = yIsArr ? ((y as NDArray<number>).shape as number[]) : []
+      const bcShape = broadcastShapes(condition.shape as number[], xShape, yShape)
+      const bcSize = shapeSize(bcShape)
+      if (bcSize !== condLen) {
+        throw new Error('Condition, x, and y must be broadcastable to the same shape')
+      }
+    }
+
+    for (let i = 0; i < condLen; i++) {
+      if (condition._data[i]) {
+        result[i] = xArr ? xArr[i]! : (x as number)
+      } else {
+        result[i] = yArr ? yArr[i]! : (y as number)
+      }
+    }
+    return new NDArray<number>(result, [...condition._shape])
+  }
+
+  // ═════════════════════════════════════════════════════════════════════
+  //  SVD Decomposition
+  // ═════════════════════════════════════════════════════════════════════
+
+  /**
+   * Singular Value Decomposition (full SVD) using the one-sided Jacobi algorithm.
+   *
+   * For a matrix A (m×n): A = U * diag(S) * Vt
+   *
+   * @param matrix - 2-D NDArray to decompose.
+   * @returns Object with U (m×m orthogonal), S (1-D singular values), Vt (n×n orthogonal).
+   *
+   * @example
+   * ```typescript
+   * const A = NDArray.from([[1, 2], [3, 4]])
+   * const { U, S, Vt } = NDArray.svd(A)
+   * // Reconstruct: U.matmul(NDArray.diag(S)).matmul(Vt) ≈ A
+   * ```
+   */
+  static svd(matrix: NDArray): { U: NDArray; S: NDArray; Vt: NDArray } {
+    if (matrix.ndim !== 2) {
+      throw new Error(`SVD requires a 2-D matrix, got ${matrix.ndim}-D`)
+    }
+    const [m, n] = matrix._shape as [number, number]
+
+    // For wide matrices, decompose A^T and swap
+    if (m < n) {
+      const At = matrix.transpose() as NDArray<number>
+      const result = NDArray._svdJacobi(At, n, m)
+      // A = U S V^T  =>  A^T = V S U^T
+      return {
+        U: result.Vt.transpose() as NDArray<number>,
+        S: result.S,
+        Vt: result.U.transpose() as NDArray<number>,
+      }
+    }
+
+    return NDArray._svdJacobi(matrix as NDArray<number>, m, n)
+  }
+
+  /**
+   * @internal One-sided Jacobi SVD for tall/rectangular matrices (m ≥ n).
+   */
+  private static _svdJacobi(A: NDArray<number>, m: number, n: number): { U: NDArray; S: NDArray; Vt: NDArray } {
+    const a = new Float64Array(m * n)
+    const v = new Float64Array(n * n)
+    for (let i = 0; i < m * n; i++) a[i] = A._data[i] as number
+    for (let i = 0; i < n; i++) v[i * n + i] = 1
+
+    const tol = 1e-14
+    const maxSweeps = 100
+
+    for (let sweep = 0; sweep < maxSweeps; sweep++) {
+      let maxOff = 0
+      for (let i = 0; i < n - 1; i++) {
+        for (let j = i + 1; j < n; j++) {
+          let p = 0,
+            qi = 0,
+            qj = 0
+          for (let k = 0; k < m; k++) {
+            const aik = a[k * n + i]!
+            const ajk = a[k * n + j]!
+            p += aik * ajk
+            qi += aik * aik
+            qj += ajk * ajk
+          }
+
+          // Skip if either column is zero or dot product is tiny
+          const normI = Math.sqrt(qi)
+          const normJ = Math.sqrt(qj)
+          const off = normI === 0 || normJ === 0 ? 0 : Math.abs(p) / (normI * normJ)
+          if (off > maxOff) maxOff = off
+
+          if (off > tol && !isNaN(off) && Math.abs(p) > 1e-30) {
+            // Compute Jacobi rotation angle using atan2 for numerical stability
+            // tan(2θ) = 2*p / (qj - qi)  =>  θ = 0.5 * atan2(2*p, qj - qi)
+            const theta = 0.5 * Math.atan2(2 * p, qj - qi)
+            const c = Math.cos(theta)
+            const s = Math.sin(theta)
+
+            // Apply rotation to columns i and j of A
+            for (let k = 0; k < m; k++) {
+              const aik = a[k * n + i]!
+              const akj = a[k * n + j]!
+              a[k * n + i] = c * aik - s * akj
+              a[k * n + j] = s * aik + c * akj
+            }
+            // Apply rotation to columns i and j of V
+            for (let k = 0; k < n; k++) {
+              const vki = v[k * n + i]!
+              const vkj = v[k * n + j]!
+              v[k * n + i] = c * vki - s * vkj
+              v[k * n + j] = s * vki + c * vkj
+            }
+          }
+        }
+      }
+      if (maxOff < tol) break
+    }
+
+    // Compute singular values from column norms
+    const k = Math.min(m, n)
+    const svals = new Array<number>(n)
+    for (let j = 0; j < n; j++) {
+      let nrm = 0
+      for (let i = 0; i < m; i++) nrm += a[i * n + j]! * a[i * n + j]!
+      svals[j] = Math.sqrt(nrm)
+    }
+
+    // Sort by singular value descending
+    const perm = new Array<number>(n)
+    for (let i = 0; i < n; i++) perm[i] = i
+    for (let i = 0; i < n - 1; i++) {
+      for (let j = i + 1; j < n; j++) {
+        if (svals[perm[j]!]! > svals[perm[i]!]!) {
+          const tmp = perm[i]!
+          perm[i] = perm[j]!
+          perm[j] = tmp
+        }
+      }
+    }
+
+    // Build U (m×m): columns are normalized A columns + Gram-Schmidt extension
+    const uData = new Array<number>(m * m).fill(0)
+    for (let j = 0; j < k; j++) {
+      const col = perm[j]!
+      const sigma = svals[col]!
+      if (sigma > 1e-14) {
+        for (let i = 0; i < m; i++) {
+          uData[i * m + j] = a[i * n + col]! / sigma
+        }
+      }
+    }
+    // Extend U to full m×m via modified Gram-Schmidt on standard basis
+    for (let j = k; j < m; j++) {
+      const eIdx = j - k
+      const vv = new Array<number>(m).fill(0)
+      vv[eIdx] = 1
+      for (let c = 0; c < j; c++) {
+        let dot = 0
+        for (let i = 0; i < m; i++) dot += vv[i]! * uData[i * m + c]!
+        for (let i = 0; i < m; i++) vv[i] = vv[i]! - dot * uData[i * m + c]!
+      }
+      let norm = 0
+      for (let i = 0; i < m; i++) norm += vv[i]! * vv[i]!
+      norm = Math.sqrt(norm)
+      if (norm > 1e-14) {
+        for (let i = 0; i < m; i++) uData[i * m + j] = vv[i]! / norm
+      }
+    }
+
+    // Build S (1-D array of length k)
+    const sData = new Array<number>(k)
+    for (let j = 0; j < k; j++) {
+      sData[j] = svals[perm[j]!]!
+    }
+
+    // Build Vt (n×n) from V, sorting rows by singular value
+    const vtData = new Array<number>(n * n)
+    for (let j = 0; j < n; j++) {
+      const col = perm[j]!
+      for (let i = 0; i < n; i++) {
+        vtData[j * n + i] = v[i * n + col]!
+      }
+    }
+
+    return {
+      U: new NDArray<number>(uData, [m, m]),
+      S: new NDArray<number>(sData, [k]),
+      Vt: new NDArray<number>(vtData, [n, n]),
+    }
+  }
+
+  // ═════════════════════════════════════════════════════════════════════
+  //  Diagonal Matrix Construction
+  // ═════════════════════════════════════════════════════════════════════
+
+  /**
+   * Create a diagonal matrix from a 1-D array of diagonal values.
+   *
+   * @param v - 1-D NDArray of diagonal entries.
+   * @returns 2-D NDArray with v on the diagonal.
+   *
+   * @example
+   * ```typescript
+   * NDArray.diag(NDArray.from([1, 2, 3]))
+   * // [[1, 0, 0], [0, 2, 0], [0, 0, 3]]
+   * ```
+   */
+  static diag(v: NDArray<number>): NDArray<number> {
+    const n = v._data.length
+    const data = new Array<number>(n * n).fill(0)
+    for (let i = 0; i < n; i++) {
+      data[i * n + i] = v._data[i] as number
+    }
+    return new NDArray<number>(data, [n, n])
+  }
+
+  // ═════════════════════════════════════════════════════════════════════
+  //  Polynomial Fitting (polyfit)
+  // ═════════════════════════════════════════════════════════════════════
+
+  /**
+   * Fit a polynomial of given degree to the data points (x, y) using
+   * least squares via the Vandermonde matrix (normal equations).
+   *
+   * @param x - Array of x-coordinates.
+   * @param y - Array of y-coordinates.
+   * @param degree - Polynomial degree (≥ 0).
+   * @returns Coefficients in ascending order [c0, c1, ..., cn].
+   *
+   * @example
+   * ```typescript
+   * const x = [0, 1, 2, 3]
+   * const y = [0, 1, 4, 9]  // y = x^2
+   * NDArray.polyfit(x, y, 2) // ≈ [0, 0, 1]
+   * ```
+   */
+  static polyfit(x: number[], y: number[], degree: number): number[] {
+    if (x.length === 0 || y.length === 0) {
+      throw new Error('x and y must not be empty')
+    }
+    if (x.length !== y.length) {
+      throw new Error('x and y must have the same length')
+    }
+    if (degree < 0) {
+      throw new Error('Degree must be non-negative')
+    }
+    if (degree >= x.length) {
+      throw new Error(`Degree ${degree} must be less than number of data points ${x.length} (underdetermined)`)
+    }
+
+    const n = x.length
+    const d = degree
+
+    // Build Vandermonde matrix V (n × (d+1)): V[i][j] = x[i]^j
+    const vand = new Array<number>(n * (d + 1))
+    for (let i = 0; i < n; i++) {
+      const xi = x[i]!
+      vand[i * (d + 1)] = 1
+      for (let j = 1; j <= d; j++) {
+        vand[i * (d + 1) + j] = vand[i * (d + 1) + j - 1]! * xi
+      }
+    }
+
+    // Normal equations: V^T * V * c = V^T * y
+    // Compute V^T * V (a symmetric (d+1)×(d+1) matrix)
+    const vtv = new Array<number>((d + 1) * (d + 1)).fill(0)
+    for (let i = 0; i <= d; i++) {
+      for (let j = 0; j <= d; j++) {
+        let sum = 0
+        for (let k = 0; k < n; k++) {
+          sum += vand[k * (d + 1) + i]! * vand[k * (d + 1) + j]!
+        }
+        vtv[i * (d + 1) + j] = sum
+      }
+    }
+
+    // Compute V^T * y
+    const vty = new Array<number>(d + 1).fill(0)
+    for (let i = 0; i <= d; i++) {
+      let sum = 0
+      for (let k = 0; k < n; k++) {
+        sum += vand[k * (d + 1) + i]! * y[k]!
+      }
+      vty[i] = sum
+    }
+
+    // Solve (d+1)×(d+1) system via Cholesky (since V^T V is SPD)
+    // Use Gaussian elimination with partial pivoting for robustness
+    const A = [...vtv]
+    const b = [...vty]
+    const nn = d + 1
+
+    // Forward elimination
+    for (let col = 0; col < nn; col++) {
+      let maxVal = Math.abs(A[col * nn + col]!)
+      let maxRow = col
+      for (let row = col + 1; row < nn; row++) {
+        const val = Math.abs(A[row * nn + col]!)
+        if (val > maxVal) {
+          maxVal = val
+          maxRow = row
+        }
+      }
+      if (maxVal < 1e-30) continue
+
+      if (maxRow !== col) {
+        for (let j = col; j < nn; j++) {
+          const tmp = A[col * nn + j]!
+          A[col * nn + j] = A[maxRow * nn + j]!
+          A[maxRow * nn + j] = tmp
+        }
+        const tmp = b[col]!
+        b[col] = b[maxRow]!
+        b[maxRow] = tmp
+      }
+
+      const pivot = A[col * nn + col]!
+      for (let row = col + 1; row < nn; row++) {
+        const factor = A[row * nn + col]! / pivot
+        if (factor === 0) continue
+        for (let j = col; j < nn; j++) {
+          A[row * nn + j] = A[row * nn + j]! - factor * A[col * nn + j]!
+        }
+        b[row] = b[row]! - factor * b[col]!
+      }
+    }
+
+    // Back substitution
+    const coeffs = new Array<number>(nn).fill(0)
+    for (let i = nn - 1; i >= 0; i--) {
+      let sum = b[i]!
+      for (let j = i + 1; j < nn; j++) {
+        sum -= A[i * nn + j]! * coeffs[j]!
+      }
+      const pivot = A[i * nn + i]!
+      coeffs[i] = Math.abs(pivot) > 1e-30 ? sum / pivot : 0
+    }
+
+    return coeffs
+  }
+
+  // ═════════════════════════════════════════════════════════════════════
+  //  Polynomial Evaluation (polyval)
+  // ═════════════════════════════════════════════════════════════════════
+
+  /**
+   * Evaluate a polynomial at given x values using Horner's method.
+   *
+   * @param coefficients - Polynomial coefficients in ascending order [c0, c1, ..., cn].
+   *                      p(x) = c0 + c1*x + c2*x^2 + ...
+   * @param x - Array of x-values to evaluate at.
+   * @returns Array of p(x) values.
+   *
+   * @example
+   * ```typescript
+   * NDArray.polyval([1, 2, 3], [0, 1, 2]) // [1, 6, 17]
+   * // p(x) = 1 + 2x + 3x^2
+   * // p(0) = 1, p(1) = 6, p(2) = 17
+   * ```
+   */
+  static polyval(coefficients: number[], x: number[]): number[] {
+    if (coefficients.length === 0) throw new Error('Coefficients must not be empty')
+    const result = new Array<number>(x.length)
+    for (let i = 0; i < x.length; i++) {
+      const xi = x[i]!
+      let val = coefficients[coefficients.length - 1]!
+      for (let j = coefficients.length - 2; j >= 0; j--) {
+        val = val * xi + coefficients[j]!
+      }
+      result[i] = val
+    }
+    return result
+  }
+
+  // ═════════════════════════════════════════════════════════════════════
+  //  FFT (Fast Fourier Transform)
+  // ═════════════════════════════════════════════════════════════════════
+
+  /**
+   * Radix-2 Cooley-Tukey Fast Fourier Transform.
+   * Input length must be a power of 2.
+   *
+   * @param real - Real part of the input signal.
+   * @param imag - Imaginary part (optional, defaults to zeros).
+   * @returns Object with `real` and `imag` Float64Arrays.
+   *
+   * @example
+   * ```typescript
+   * const fs = 128, f = 10, n = 128
+   * const t = Array.from({ length: n }, (_, i) => i / fs)
+   * const signal = t.map(x => Math.sin(2 * Math.PI * f * x))
+   * const fft = NDArray.fft(signal)
+   * // Peak at index 10 (frequency 10 Hz)
+   * ```
+   */
+  static fft(real: number[], imag?: number[]): { real: Float64Array; imag: Float64Array } {
+    const n = real.length
+    if (n === 0) throw new Error('Input must not be empty')
+    if ((n & (n - 1)) !== 0) {
+      throw new Error(`FFT input length ${n} is not a power of 2. Pad with zeros first.`)
+    }
+
+    const re = new Float64Array(real)
+    const im = imag !== undefined ? new Float64Array(imag) : new Float64Array(n)
+
+    NDArray._fftRadix2(re, im, n, 1)
+
+    return { real: re, imag: im }
+  }
+
+  /**
+   * Inverse Fast Fourier Transform (radix-2 Cooley-Tukey).
+   * Input length must be a power of 2.
+   *
+   * @param real - Real part of the frequency-domain signal.
+   * @param imag - Imaginary part (optional, defaults to zeros).
+   * @returns Object with `real` and `imag` Float64Arrays (time domain).
+   *
+   * @example
+   * ```typescript
+   * const fft = NDArray.fft([1, 0, -1, 0])
+   * const ifft = NDArray.ifft(fft.real, fft.imag)
+   * // ifft.real ≈ [1, 0, -1, 0]
+   * ```
+   */
+  static ifft(real: number[], imag?: number[]): { real: Float64Array; imag: Float64Array } {
+    const n = real.length
+    if (n === 0) throw new Error('Input must not be empty')
+    if ((n & (n - 1)) !== 0) {
+      throw new Error(`IFFT input length ${n} is not a power of 2. Pad with zeros first.`)
+    }
+
+    const re = new Float64Array(real)
+    const im = imag !== undefined ? new Float64Array(imag) : new Float64Array(n)
+
+    NDArray._fftRadix2(re, im, n, -1)
+
+    // Scale by 1/n
+    for (let i = 0; i < n; i++) {
+      re[i] = re[i]! / n
+      im[i] = im[i]! / n
+    }
+
+    return { real: re, imag: im }
+  }
+
+  /**
+   * @internal Radix-2 Cooley-Tukey FFT (in-place, iterative bit-reversal + Danielson-Lanczos).
+   */
+  private static _fftRadix2(re: Float64Array, im: Float64Array, n: number, sign: number): void {
+    // Bit-reversal permutation
+    for (let i = 1, j = 0; i < n; i++) {
+      let bit = n >> 1
+      for (; j & bit; bit >>= 1) {
+        j ^= bit
+      }
+      j ^= bit
+      if (i < j) {
+        const tr = re[i]!
+        re[i] = re[j]!
+        re[j] = tr
+        const ti = im[i]!
+        im[i] = im[j]!
+        im[j] = ti
+      }
+    }
+
+    // Danielson-Lanczos
+    for (let len = 2; len <= n; len <<= 1) {
+      const halfLen = len >> 1
+      const wAngle = (sign * 2 * Math.PI) / len
+      const wReal = Math.cos(wAngle)
+      const wImag = Math.sin(wAngle)
+
+      for (let i = 0; i < n; i += len) {
+        let wr = 1
+        let wi = 0
+        for (let j = 0; j < halfLen; j++) {
+          const idx = i + j
+          const idx2 = idx + halfLen
+          const tr = wr * re[idx2]! - wi * im[idx2]!
+          const ti = wr * im[idx2]! + wi * re[idx2]!
+          re[idx2] = re[idx]! - tr
+          im[idx2] = im[idx]! - ti
+          re[idx] = re[idx]! + tr
+          im[idx] = im[idx]! + ti
+          const newWr = wr * wReal - wi * wImag
+          wi = wr * wImag + wi * wReal
+          wr = newWr
+        }
+      }
+    }
   }
 }
 

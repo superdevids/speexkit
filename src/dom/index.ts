@@ -1,6 +1,6 @@
 function assertBrowser(): void {
   if (typeof window === 'undefined') {
-    throw new Error('speexkit/dom can only be used in a browser environment');
+    throw new Error('speexkit/dom can only be used in a browser environment')
   }
 }
 
@@ -14,34 +14,34 @@ function assertBrowser(): void {
  * @returns `true` if the copy succeeded, `false` otherwise.
  */
 export async function copyToClipboard(text: string): Promise<boolean> {
-  assertBrowser();
+  assertBrowser()
 
   if (typeof navigator?.clipboard?.writeText === 'function') {
     try {
-      await navigator.clipboard.writeText(text);
-      return true;
+      await navigator.clipboard.writeText(text)
+      return true
     } catch {
-      return false;
+      return false
     }
   }
 
-  const textarea = document.createElement('textarea');
-  textarea.value = text;
-  textarea.style.position = 'fixed';
-  textarea.style.opacity = '0';
-  textarea.style.pointerEvents = 'none';
-  document.body.appendChild(textarea);
-  textarea.select();
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  textarea.style.pointerEvents = 'none'
+  document.body.appendChild(textarea)
+  textarea.select()
 
-  let success = false;
+  let success = false
   try {
-    success = document.execCommand('copy');
+    success = document.execCommand('copy')
   } catch {
     // fall through
   }
 
-  document.body.removeChild(textarea);
-  return success;
+  document.body.removeChild(textarea)
+  return success
 }
 
 /**
@@ -54,16 +54,16 @@ export async function copyToClipboard(text: string): Promise<boolean> {
  * @param filename - The suggested filename for the download.
  */
 export function downloadFile(blob: Blob, filename: string): void {
-  assertBrowser();
+  assertBrowser()
 
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filename;
-  document.body.appendChild(anchor);
-  anchor.click();
-  document.body.removeChild(anchor);
-  URL.revokeObjectURL(url);
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = filename
+  document.body.appendChild(anchor)
+  anchor.click()
+  document.body.removeChild(anchor)
+  URL.revokeObjectURL(url)
 }
 
 /**
@@ -73,14 +73,14 @@ export function downloadFile(blob: Blob, filename: string): void {
  * @returns A promise that resolves with the file content as text.
  */
 export function readFileAsText(file: File): Promise<string> {
-  assertBrowser();
+  assertBrowser()
 
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsText(file);
-  });
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = () => reject(reader.error)
+    reader.readAsText(file)
+  })
 }
 
 /**
@@ -90,14 +90,14 @@ export function readFileAsText(file: File): Promise<string> {
  * @returns A promise that resolves with the data URL string.
  */
 export function readFileAsDataURL(file: File): Promise<string> {
-  assertBrowser();
+  assertBrowser()
 
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(file)
+  })
 }
 
 /**
@@ -107,20 +107,17 @@ export function readFileAsDataURL(file: File): Promise<string> {
  * @param handler - The callback receiving the mouse event.
  * @returns A cleanup function that removes the listener.
  */
-export function onClickOutside(
-  el: HTMLElement,
-  handler: (event: MouseEvent) => void,
-): () => void {
-  assertBrowser();
+export function onClickOutside(el: HTMLElement, handler: (event: MouseEvent) => void): () => void {
+  assertBrowser()
 
   const listener = (event: MouseEvent) => {
     if (!el.contains(event.target as Node)) {
-      handler(event);
+      handler(event)
     }
-  };
+  }
 
-  document.addEventListener('click', listener);
-  return () => document.removeEventListener('click', listener);
+  document.addEventListener('click', listener)
+  return () => document.removeEventListener('click', listener)
 }
 
 /**
@@ -131,16 +128,16 @@ export function onClickOutside(
  * @returns An unlock function that restores the original overflow value.
  */
 export function lockScroll(target?: HTMLElement): () => void {
-  assertBrowser();
+  assertBrowser()
 
-  const el = target ?? document.body;
-  const original = el.style.overflow;
+  const el = target ?? document.body
+  const original = el.style.overflow
 
-  el.style.overflow = 'hidden';
+  el.style.overflow = 'hidden'
 
   return () => {
-    el.style.overflow = original;
-  };
+    el.style.overflow = original
+  }
 }
 
 /** Selector for focusable elements (standard HTML interactive elements). */
@@ -151,7 +148,7 @@ const FOCUSABLE_SELECTOR = [
   'select:not([disabled])',
   'textarea:not([disabled])',
   '[tabindex]:not([tabindex="-1"])',
-].join(',');
+].join(',')
 
 /**
  * Trap keyboard focus within an element so that Tab and Shift+Tab cycle
@@ -163,33 +160,33 @@ const FOCUSABLE_SELECTOR = [
  * @returns A cleanup function that removes the keydown listener.
  */
 export function trapFocus(el: HTMLElement): () => void {
-  assertBrowser();
+  assertBrowser()
 
   const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key !== 'Tab') return;
+    if (event.key !== 'Tab') return
 
-    const focusable = el.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-    if (focusable.length === 0) return;
+    const focusable = el.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+    if (focusable.length === 0) return
 
-    const first = focusable[0]!;
-    const last = focusable[focusable.length - 1]!;
+    const first = focusable[0]!
+    const last = focusable[focusable.length - 1]!
 
     if (event.shiftKey) {
       if (document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
+        event.preventDefault()
+        last.focus()
       }
     } else {
       if (document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
+        event.preventDefault()
+        first.focus()
       }
     }
-  };
+  }
 
-  document.addEventListener('keydown', handleKeyDown);
+  document.addEventListener('keydown', handleKeyDown)
 
-  return () => document.removeEventListener('keydown', handleKeyDown);
+  return () => document.removeEventListener('keydown', handleKeyDown)
 }
 
 /**
@@ -201,25 +198,25 @@ export function trapFocus(el: HTMLElement): () => void {
  * @returns A cleanup function that disconnects the observer.
  */
 export function debounceResize(fn: () => void, delay: number = 150): () => void {
-  assertBrowser();
+  assertBrowser()
 
-  let timer: ReturnType<typeof setTimeout> | null = null;
+  let timer: ReturnType<typeof setTimeout> | null = null
 
   const observer = new ResizeObserver(() => {
-    if (timer != null) clearTimeout(timer);
+    if (timer != null) clearTimeout(timer)
     timer = setTimeout(() => {
-      timer = null;
-      fn();
-    }, delay);
-  });
+      timer = null
+      fn()
+    }, delay)
+  })
 
-  const el = document.documentElement;
-  observer.observe(el);
+  const el = document.documentElement
+  observer.observe(el)
 
   return () => {
-    if (timer != null) clearTimeout(timer);
-    observer.disconnect();
-  };
+    if (timer != null) clearTimeout(timer)
+    observer.disconnect()
+  }
 }
 
 /**
@@ -231,26 +228,19 @@ export function debounceResize(fn: () => void, delay: number = 150): () => void 
  * @param opts - Optional `IntersectionObserverInit` overrides.
  * @returns A function that disconnects the observer early.
  */
-export function onVisible(
-  el: HTMLElement,
-  fn: () => void,
-  opts?: IntersectionObserverInit,
-): () => void {
-  assertBrowser();
+export function onVisible(el: HTMLElement, fn: () => void, opts?: IntersectionObserverInit): () => void {
+  assertBrowser()
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      if (entries[0]?.isIntersecting) {
-        fn();
-        observer.disconnect();
-      }
-    },
-    opts,
-  );
+  const observer = new IntersectionObserver((entries) => {
+    if (entries[0]?.isIntersecting) {
+      fn()
+      observer.disconnect()
+    }
+  }, opts)
 
-  observer.observe(el);
+  observer.observe(el)
 
-  return () => observer.disconnect();
+  return () => observer.disconnect()
 }
 
 /**
@@ -260,13 +250,13 @@ export function onVisible(
  * back to `window.innerWidth` / `innerHeight`.
  */
 export function getViewport(): { width: number; height: number } {
-  assertBrowser();
+  assertBrowser()
 
-  const el = document.documentElement;
+  const el = document.documentElement
   return {
     width: el?.clientWidth ?? window.innerWidth,
     height: el?.clientHeight ?? window.innerHeight,
-  };
+  }
 }
 
 /**
@@ -275,8 +265,8 @@ export function getViewport(): { width: number; height: number } {
  * @returns `true` if `'ontouchstart'` is defined on the window object.
  */
 export function isTouchDevice(): boolean {
-  assertBrowser();
-  return 'ontouchstart' in window;
+  assertBrowser()
+  return 'ontouchstart' in window
 }
 
 /**
@@ -285,12 +275,12 @@ export function isTouchDevice(): boolean {
  * @param smooth - When `true` (default), uses smooth scrolling behaviour.
  */
 export function scrollToTop(smooth: boolean = true): void {
-  assertBrowser();
+  assertBrowser()
 
   window.scrollTo({
     top: 0,
     behavior: smooth ? 'smooth' : 'instant',
-  });
+  })
 }
 
 /**
@@ -300,10 +290,10 @@ export function scrollToTop(smooth: boolean = true): void {
  * @param smooth - When `true` (default), uses smooth scrolling behaviour.
  */
 export function scrollToElement(el: HTMLElement, smooth: boolean = true): void {
-  assertBrowser();
+  assertBrowser()
 
   el.scrollIntoView({
     behavior: smooth ? 'smooth' : 'instant',
     block: 'nearest',
-  });
+  })
 }

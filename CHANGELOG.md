@@ -1,5 +1,25 @@
 # Changelog
 
+## v1.4.15 (2026-06-30)
+- **PRD completion:** All 48 modules fully implemented and production-ready
+- **ML Expansion:** Added PCA, LogisticRegression, DecisionTreeClassifier, DBSCAN, OneHotEncoder, kFold/crossValScore
+- **Reactive Module:** signal(), computed(), effect(), batch() — framework-agnostic reactivity
+- **Template Engine:** render(), compile() — mustache-compatible (variables, sections, partials, comments)
+- **Structures:** Trie, Graph (BFS/DFS/Dijkstra), Heap, PriorityQueue, LinkedList, Deque, BloomFilter, DisjointSet
+- **Monads:** Maybe&lt;T&gt; (Just/Nothing), Either&lt;L,R&gt; (Left/Right) with full functor/monad compliance
+- **Stats Expansion:** anovaOneWay, chiSquareTest, chiSquareGoodnessOfFit, mannWhitneyU
+- **SVG Charts:** svgBarChart, svgLineChart, svgScatterChart, svgPieChart — zero-dep inline SVG
+- **NDArray Enhancement:** SVD (fixed Jacobi atan2 algorithm), polyfit, polyval, FFT/IFFT (Cooley-Tukey), boolean/fancy indexing, where (3-arg)
+- **Security Fix:** verifyJWT now validates nbf (not-before) claim per RFC 7519
+- **63 test files, 2,907 tests — all passing** (previously 2,544, +363 brutal tests)
+- **59 entry points** (ESM + CJS + DTS) — added reactive, template, viz-data/svg
+- **Auth tests:** 28 brutal tests (JWT, PKCE, Basic Auth) — 100% pass
+- **HTTP tests:** 17 brutal tests (client, interceptors, error handling)
+- **Documentation Integrity (PRD04):** SECURITY.md version table fixed, PUBLISH.md test count updated, README.md/SUMMARY.md synced with all 48 modules
+- **All 2,907 tests passing — 63 test files, 0 failures**
+- **TypeScript strict — 0 errors** (tsc --noEmit)
+- Bundle size: ~28 KB gzip (full barrel)
+
 ## v1.4.14 (2026-06-30)
 - **Full PRD audit:** All 46 modules now fully implemented and tested
 - **Cache module:** LRUCache, LFUCache, TTLCache — with capacity guards (fractional max floored, 0 capacity handled)

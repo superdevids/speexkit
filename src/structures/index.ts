@@ -141,7 +141,7 @@ export class Graph {
   hasEdge(from: string, to: string): boolean {
     const edges = this.#adj.get(from)
     if (!edges) return false
-    return edges.some(e => e.node === to)
+    return edges.some((e) => e.node === to)
   }
 
   /** Return all outgoing neighbours (with weight). */
@@ -212,8 +212,7 @@ export class Graph {
       visited.add(u)
       stack.add(u)
       for (const { node: v } of this.#adj.get(u) ?? []) {
-        if (stack.has(v))
-          throw new Error(`Cycle detected: ${u} -> ${v}`)
+        if (stack.has(v)) throw new Error(`Cycle detected: ${u} -> ${v}`)
         if (!visited.has(v)) dfs(v)
       }
       stack.delete(u)
@@ -402,7 +401,7 @@ export class PriorityQueue<T> {
   #heap: Heap<{ value: T }>
 
   constructor(opts?: { priority?: Priority<T> }) {
-    const pri = opts?.priority ?? ((x: T) => (x as any))
+    const pri = opts?.priority ?? ((x: T) => x as any)
     this.#heap = new Heap({
       comparator: (a, b) => pri(a.value) - pri(b.value),
     })
@@ -558,6 +557,12 @@ export class LinkedList<T> {
  * d.popBack()  // 1
  * ```
  */
+/* ───────────────────────────── Maybe / Either Monads ─────────────── */
+
+export { Either, Maybe } from './monad.js'
+
+/* ───────────────────────────── Deque ───────────────────────────────────── */
+
 export class Deque<T> {
   #data: (T | undefined)[] = []
   #front = 0

@@ -320,7 +320,7 @@ const SECRET_PATTERNS: { type: string; re: RegExp }[] = [
   { type: 'github_token', re: /ghp_[a-zA-Z0-9]{36}|github_pat_[a-zA-Z0-9]{22,}/g },
   { type: 'jwt', re: /eyJ[a-zA-Z0-9_-]+\.eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+/g },
   { type: 'private_key', re: /-----BEGIN\s+(?:\w+\s+)?PRIVATE\s+KEY-----/g },
-  { type: 'api_key', re: /(?:api[_-]?key|apikey|secret|token)\s*[:=]\s*['"][a-zA-Z0-9_\-]{16,}['"]/gi },
+  { type: 'api_key', re: /(?:api[_-]?key|apikey|secret|token)\s*[:=]\s*['"][a-zA-Z0-9_-]{16,}['"]/gi },
 ]
 
 function shannonEntropy(value: string): number {
@@ -456,4 +456,169 @@ export function maskPII(text: string, opts?: MaskPIIOptions): string {
   }
 
   return result
+}
+
+// ─── AES-GCM Encryption / Decryption ─────────────────────────────
+//
+// All operations delegate to the native Web Crypto API
+// (globalThis.crypto.subtle) — this is NOT a JavaScript implementation
+// of AES or GCM.  Available in Node ≥18, all modern browsers, Deno,
+// and Bun.
+//
+// Security notes:
+// - AES-256-GCM provides authenticated encryption (confidentiality +
+//   integrity).  The auth tag is verified on decryption; tampered
+//   ciphertext or wrong keys produce an error.
+// - The IV (nonce) is auto-generated as 12 random bytes — never reuse
+//   an IV with the same key.
+// - PBKDF2 uses 100 000 iterations of SHA-256, which is the OWASP
+//   recommended minimum (2023).
+// ─────────────────────────────────────────────────────────────────
+
+const AES_IV_LENGTH = 12
+const AES_TAG_BYTES = 16
+const AES_KEY_BYTES = 32
+const PBKDF2_ITERATIONS = 100_000
+const PBKDF2_SALT_BYTES = 16
+
+/**
+ * Encrypts `plaintext` with AES-256-GCM using the native Web Crypto API.
+ *
+ * A random 12-byte IV is generated for every call.  The authentication
+ * tag is returned separately so callers can store / transmit it
+ * alongside the ciphertext (or concatenated, depending on the protocol).
+ *
+ * @param plaintext - Data to encrypt.  Strings are UTF-8 encoded.
+ * @param key       - 32-byte AES-256 key (see {@link generateAesKey}
+ *                    or {@link aesKeyFromPassword}).
+ * @returns An object with `ciphertext`, `iv`, and `tag` — each a
+ *          `Uint8Array`.
+ *
+ * @throws {TypeError} If `key` is not exactly 32 bytes.
+ * @throws {Error}     If the native crypto operation fails.
+ *
+ * @example
+ * const key = await generateAesKey()
+ * const { ciphertext, iv, tag } = await encryptAesGcm('hello', key)
+ */
+export async function encryptAesGcm(
+  plaintext: string | Uint8Array,
+  key: Uint8Array,
+): Promise<{ ciphertext: Uint8Array; iv: Uint8Array; tag: Uint8Array }> {
+  if (key.byteLength !== AES_KEY_BYTES) {
+    throw new TypeError(`AES-256 key must be ${AES_KEY_BYTES} bytes, got ${key.byteLength}`)
+  }
+
+  const iv = crypto.getRandomValues(new Uint8Array(AES_IV_LENGTH))
+  const data = typeof plaintext === 'string' ? new TextEncoder().encode(plaintext) : plaintext
+
+  const cryptoKey = await crypto.subtle.importKey('raw', key as any, { name: 'AES-GCM' }, false, ['encrypt'])
+
+  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv, tagLength: AES_TAG_BYTES * 8 }, cryptoKey, data as any)
+
+  const encryptedBytes = new Uint8Array(encrypted)
+  const tag = encryptedBytes.slice(-AES_TAG_BYTES)
+  const ciphertext = encryptedBytes.slice(0, -AES_TAG_BYTES)
+
+  return { ciphertext, iv, tag }
+}
+
+/**
+ * Decrypts data previously encrypted with {@link encryptAesGcm}.
+ *
+ * The ciphertext, IV, and authentication tag must match the values
+ * returned by `encryptAesGcm`.  The auth tag is verified by the
+ * native Web Crypto API — tampering or wrong keys cause an error.
+ *
+ * @param ciphertext - The encrypted data (without auth tag).
+ * @param key        - The 32-byte AES-256 key used during encryption.
+ * @param iv         - The 12-byte IV used during encryption.
+ * @param tag        - The 16-byte authentication tag.
+ * @returns The decrypted plaintext as a `Uint8Array`.
+ *
+ * @throws {TypeError} If `key` is not 32 bytes or `tag` is not 16 bytes.
+ * @throws {Error}     If decryption fails (wrong key, tampered data, etc.).
+ *
+ * @example
+ * const plain = await decryptAesGcm(ciphertext, key, iv, tag)
+ * // => Uint8Array
+ */
+export async function decryptAesGcm(ciphertext: Uint8Array, key: Uint8Array, iv: Uint8Array, tag: Uint8Array): Promise<Uint8Array> {
+  if (key.byteLength !== AES_KEY_BYTES) {
+    throw new TypeError(`AES-256 key must be ${AES_KEY_BYTES} bytes, got ${key.byteLength}`)
+  }
+  if (tag.byteLength !== AES_TAG_BYTES) {
+    throw new TypeError(`Auth tag must be ${AES_TAG_BYTES} bytes, got ${tag.byteLength}`)
+  }
+
+  const cryptoKey = await crypto.subtle.importKey('raw', key as any, { name: 'AES-GCM' }, false, ['decrypt'])
+
+  const combined = new Uint8Array(ciphertext.byteLength + tag.byteLength)
+  combined.set(ciphertext, 0)
+  combined.set(tag, ciphertext.byteLength)
+
+  const decrypted = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: iv as any, tagLength: AES_TAG_BYTES * 8 },
+    cryptoKey,
+    combined as any,
+  )
+
+  return new Uint8Array(decrypted)
+}
+
+/**
+ * Generates a cryptographically random 256-bit (32-byte) AES key.
+ *
+ * Uses `crypto.getRandomValues` — suitable for all modern runtimes.
+ *
+ * @returns A 32-byte `Uint8Array` suitable for use with
+ *          {@link encryptAesGcm} / {@link decryptAesGcm}.
+ *
+ * @example
+ * const key = await generateAesKey()
+ * // => Uint8Array(32)
+ */
+export async function generateAesKey(): Promise<Uint8Array> {
+  return crypto.getRandomValues(new Uint8Array(AES_KEY_BYTES))
+}
+
+/**
+ * Derives an AES-256 key from a password using PBKDF2.
+ *
+ * Uses the native Web Crypto API with 100 000 iterations of SHA-256.
+ * If no salt is provided a cryptographically random 16-byte salt is
+ * auto-generated.  **The salt must be stored alongside the ciphertext**
+ * for successful decryption.
+ *
+ * @param password - The passphrase to derive the key from.
+ * @param salt     - Optional 16-byte salt.  Auto-generated if omitted.
+ * @returns An object with the 32-byte derived `key` and the `salt`
+ *          that was used.
+ *
+ * @example
+ * const { key, salt } = await aesKeyFromPassword('my-passphrase')
+ * // key: Uint8Array(32), salt: Uint8Array(16)
+ */
+export async function aesKeyFromPassword(password: string, salt?: Uint8Array): Promise<{ key: Uint8Array; salt: Uint8Array }> {
+  const saltBytes = salt ?? crypto.getRandomValues(new Uint8Array(PBKDF2_SALT_BYTES))
+  const passwordBytes = new TextEncoder().encode(password)
+
+  const baseKey = await crypto.subtle.importKey('raw', passwordBytes as any, 'PBKDF2', false, ['deriveKey'])
+
+  const derivedCryptoKey = await crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt: saltBytes as any,
+      iterations: PBKDF2_ITERATIONS,
+      hash: 'SHA-256',
+    },
+    baseKey,
+    { name: 'AES-GCM', length: AES_KEY_BYTES * 8 },
+    true,
+    ['encrypt', 'decrypt'],
+  )
+
+  const rawKey = await crypto.subtle.exportKey('raw', derivedCryptoKey)
+
+  return { key: new Uint8Array(rawKey), salt: saltBytes }
 }

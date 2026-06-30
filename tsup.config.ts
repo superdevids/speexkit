@@ -58,6 +58,9 @@ export default defineConfig({
     'src/serialize/index.ts',
     'src/feature-flags/index.ts',
     'src/dom/index.ts',
+    'src/reactive/index.ts',
+    'src/template/index.ts',
+    'src/viz-data/svg.ts',
   ],
   format: ['esm', 'cjs'],
   dts: {

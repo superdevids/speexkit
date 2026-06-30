@@ -1,3 +1,12 @@
+export type { CrossValOptions, EstimatorLike, KFoldResult } from './cross-validation.js'
+export { crossValScore, kFold } from './cross-validation.js'
+export { DBSCAN } from './dbscan.js'
+export type { TreeNode } from './decision-tree.js'
+export { DecisionTreeClassifier } from './decision-tree.js'
+export { LogisticRegression } from './logistic-regression.js'
+export { OneHotEncoder } from './onehot-encoder.js'
+export { PCA } from './pca.js'
+
 export class StandardScaler {
   private mean: number[] = []
   private std: number[] = []
@@ -77,11 +86,48 @@ export class MinMaxScaler {
 export function trainTestSplit(
   X: number[][],
   y: number[],
-  o?: { testSize?: number; randomState?: number; shuffle?: boolean },
+  o?: { testSize?: number; randomState?: number; shuffle?: boolean; stratify?: number[] },
 ): [number[][], number[][], number[], number[]] {
   const n = X.length
   if (!n) throw Error('empty')
   const ts = o?.testSize ?? 0.25
+  const stratify = o?.stratify
+
+  if (stratify) {
+    if (stratify.length !== n) throw Error('stratify length must match X length')
+    let s = o?.randomState ?? Date.now()
+    const r = () => {
+      s |= 0
+      s = (s + 0x6d2b79f5) | 0
+      let t = Math.imul(s ^ (s >>> 15), 1 | s)
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+    }
+    const classIndices = new Map<number, number[]>()
+    for (let i = 0; i < n; i++) {
+      const cls = stratify[i]!
+      if (!classIndices.has(cls)) classIndices.set(cls, [])
+      classIndices.get(cls)!.push(i)
+    }
+    const trainIdx: number[] = []
+    const testIdx: number[] = []
+    for (const [, indices] of classIndices) {
+      const k = indices.length
+      const shuffled = [...indices]
+      if (o?.shuffle ?? true) {
+        for (let i = k - 1; i > 0; i--) {
+          const j = Math.floor(r() * (i + 1))
+          ;[shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!]
+        }
+      }
+      const nTest = Math.max(1, Math.round(k * ts))
+      const nTrain = k - nTest
+      for (let i = 0; i < nTrain; i++) trainIdx.push(shuffled[i]!)
+      for (let i = nTrain; i < k; i++) testIdx.push(shuffled[i]!)
+    }
+    return [trainIdx.map((i) => [...X[i]!]), testIdx.map((i) => [...X[i]!]), trainIdx.map((i) => y[i]!), testIdx.map((i) => y[i]!)]
+  }
+
   const idx = Array.from({ length: n }, (_, i) => i)
   if (o?.shuffle ?? true) {
     let s = o?.randomState ?? Date.now()
@@ -396,9 +442,13 @@ export class KNN {
         const wt = this.w === 'distance' ? 1 / (d + 1e-10) : 1
         votes.set(lb, (votes.get(lb) ?? 0) + wt)
       }
-      let bestLb = 0, bestV = 0
+      let bestLb = 0,
+        bestV = 0
       for (const [lb, v] of votes) {
-        if (v > bestV) { bestV = v; bestLb = lb }
+        if (v > bestV) {
+          bestV = v
+          bestLb = lb
+        }
       }
       return bestLb
     })

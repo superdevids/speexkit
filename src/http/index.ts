@@ -28,7 +28,7 @@ export class HttpError extends Error {
     public readonly body: unknown,
   ) {
     super(`HTTP ${status} ${statusText}`)
-    this.name = "HttpError"
+    this.name = 'HttpError'
   }
 }
 
@@ -54,13 +54,8 @@ export interface RequestConfig {
  * to continue the pipeline.
  */
 export interface Interceptor {
-  request?: (
-    config: RequestConfig,
-  ) => RequestConfig | Promise<RequestConfig>
-  response?: (
-    response: Response,
-    config: RequestConfig,
-  ) => Response | Promise<Response>
+  request?: (config: RequestConfig) => RequestConfig | Promise<RequestConfig>
+  response?: (response: Response, config: RequestConfig) => Response | Promise<Response>
   error?: (error: unknown, config: RequestConfig) => unknown
 }
 
@@ -135,7 +130,7 @@ export interface RateLimitMiddlewareOptions {
 }
 
 /** HTTP verb aliases that the client exposes as methods. */
-type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 
 /** Options a caller can pass to individual request methods. */
 export interface RequestOptions {
@@ -155,29 +150,11 @@ export interface RequestOptions {
  * circuit-breaker decorator.
  */
 export interface HttpClient {
-  get<T = unknown>(
-    url: string,
-    opts?: RequestOptions,
-  ): Promise<HttpResponse<T>>
-  post<T = unknown>(
-    url: string,
-    body?: unknown,
-    opts?: RequestOptions,
-  ): Promise<HttpResponse<T>>
-  put<T = unknown>(
-    url: string,
-    body?: unknown,
-    opts?: RequestOptions,
-  ): Promise<HttpResponse<T>>
-  delete<T = unknown>(
-    url: string,
-    opts?: RequestOptions,
-  ): Promise<HttpResponse<T>>
-  patch<T = unknown>(
-    url: string,
-    body?: unknown,
-    opts?: RequestOptions,
-  ): Promise<HttpResponse<T>>
+  get<T = unknown>(url: string, opts?: RequestOptions): Promise<HttpResponse<T>>
+  post<T = unknown>(url: string, body?: unknown, opts?: RequestOptions): Promise<HttpResponse<T>>
+  put<T = unknown>(url: string, body?: unknown, opts?: RequestOptions): Promise<HttpResponse<T>>
+  delete<T = unknown>(url: string, opts?: RequestOptions): Promise<HttpResponse<T>>
+  patch<T = unknown>(url: string, body?: unknown, opts?: RequestOptions): Promise<HttpResponse<T>>
   /**
    * Append an interceptor to the pipeline. Interceptors are executed in
    * registration order: request → fetch → response → error.
@@ -230,8 +207,8 @@ function backoffDelay(attempt: number, baseDelay: number): number {
 function resolveURL(baseURL: string | undefined, path: string): string {
   if (!baseURL) return path
   if (/^https?:\/\//i.test(path)) return path
-  const base = baseURL.replace(/\/+$/, "")
-  const relative = path.replace(/^\/+/, "")
+  const base = baseURL.replace(/\/+$/, '')
+  const relative = path.replace(/^\/+/, '')
   return `${base}/${relative}`
 }
 
@@ -251,13 +228,13 @@ function timeoutSignal(ms: number): AbortSignal | undefined {
  * - Everything else             → text (caller can re-parse)
  */
 async function parseBody(response: Response): Promise<unknown> {
-  const ct = (response.headers.get("content-type") ?? "").toLowerCase()
-  if (ct.includes("application/json")) {
+  const ct = (response.headers.get('content-type') ?? '').toLowerCase()
+  if (ct.includes('application/json')) {
     // Handle empty body gracefully
     const text = await response.text()
     return text ? JSON.parse(text) : null
   }
-  if (ct.startsWith("text/")) {
+  if (ct.startsWith('text/')) {
     return response.text()
   }
   return response.text()
@@ -290,11 +267,11 @@ async function executeRequest(
   const breakerKey = breaker ? extractBreakerKey(cfg.url) : undefined
   if (breaker && breakerKey) {
     const state = breaker.states.get(breakerKey)
-    if (state && state.status === "open") {
+    if (state && state.status === 'open') {
       if (Date.now() - state.openedAt >= breaker.resetMs) {
-        state.status = "half-open"
+        state.status = 'half-open'
       } else {
-        throw new HttpError(503, "Service Unavailable (circuit open)", null)
+        throw new HttpError(503, 'Service Unavailable (circuit open)', null)
       }
     }
   }
@@ -308,10 +285,10 @@ async function executeRequest(
 
   const maxAttempts = retryOpts?.maxAttempts ?? 1
   const baseDelay = retryOpts?.baseDelay ?? 1_000
-  let lastError: unknown = undefined
+  let lastError: unknown
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    if (abortedRef.aborted) throw new DOMException("Aborted", "AbortError")
+    if (abortedRef.aborted) throw new DOMException('Aborted', 'AbortError')
     if (attempt > 0) {
       await sleep(backoffDelay(attempt - 1, baseDelay))
     }
@@ -351,7 +328,7 @@ async function executeRequest(
       // Success – reset breaker if half-open
       if (breaker && breakerKey) {
         const state = breaker.states.get(breakerKey)
-        if (state && state.status === "half-open") {
+        if (state && state.status === 'half-open') {
           breaker.states.delete(breakerKey)
         }
       }
@@ -369,7 +346,7 @@ async function executeRequest(
         }
       }
       // AbortError – do not retry
-      if (err instanceof DOMException && err.name === "AbortError") {
+      if (err instanceof DOMException && err.name === 'AbortError') {
         throw err
       }
     }
@@ -386,8 +363,7 @@ function buildResponse(data: unknown, response: Response): HttpResponse<unknown>
     status: response.status,
     headers: response.headers,
     ok: response.ok,
-    parseAs: <S>(schema: { parse: (data: unknown) => S }): Promise<S> =>
-      Promise.resolve(schema.parse(data)),
+    parseAs: <S>(schema: { parse: (data: unknown) => S }): Promise<S> => Promise.resolve(schema.parse(data)),
   }
   return res
 }
@@ -397,7 +373,7 @@ function buildResponse(data: unknown, response: Response): HttpResponse<unknown>
 /* ------------------------------------------------------------------ */
 
 interface BreakerEntry {
-  status: "closed" | "open" | "half-open"
+  status: 'closed' | 'open' | 'half-open'
   failures: number
   openedAt: number
 }
@@ -424,8 +400,8 @@ function createBreakerState(opts: CircuitBreakerOptions): BreakerState {
 function extractBreakerKey(url: string): string {
   try {
     const u = new URL(url)
-    const segments = u.pathname.replace(/\/+$/, "").split("/").filter(Boolean)
-    const pattern = segments.slice(0, 2).join("/")
+    const segments = u.pathname.replace(/\/+$/, '').split('/').filter(Boolean)
+    const pattern = segments.slice(0, 2).join('/')
     return `${u.protocol}//${u.host}/${pattern}`
   } catch {
     return url
@@ -435,13 +411,13 @@ function extractBreakerKey(url: string): string {
 function recordBreakerFailure(breaker: BreakerState, key: string): void {
   let entry = breaker.states.get(key)
   if (!entry) {
-    entry = { status: "closed", failures: 0, openedAt: 0 }
+    entry = { status: 'closed', failures: 0, openedAt: 0 }
     breaker.states.set(key, entry)
   }
-  if (entry.status === "open") return
+  if (entry.status === 'open') return
   entry.failures++
   if (entry.failures >= breaker.failureThreshold) {
-    entry.status = "open"
+    entry.status = 'open'
     entry.openedAt = Date.now()
   }
 }
@@ -470,18 +446,13 @@ export function createHttpClient(opts: HttpClientOptions = {}): HttpClient {
 
   const createMethod =
     (method: HttpMethod) =>
-    async <T = unknown>(
-      url: string,
-      body?: unknown,
-      opts_?: RequestOptions,
-    ): Promise<HttpResponse<T>> => {
+    async <T = unknown>(url: string, body?: unknown, opts_?: RequestOptions): Promise<HttpResponse<T>> => {
       const mergedHeaders: Record<string, string> = {
         ...defaultHeaders,
         ...(opts_?.headers ?? {}),
       }
 
-      const signal =
-        opts_?.signal ?? timeoutSignal(defaultTimeout)
+      const signal = opts_?.signal ?? timeoutSignal(defaultTimeout)
 
       const config: RequestConfig = {
         url: resolveURL(baseURL, url),
@@ -494,7 +465,7 @@ export function createHttpClient(opts: HttpClientOptions = {}): HttpClient {
       const abortedRef = { aborted: false }
       if (signal) {
         signal.addEventListener(
-          "abort",
+          'abort',
           () => {
             abortedRef.aborted = true
           },
@@ -502,28 +473,17 @@ export function createHttpClient(opts: HttpClientOptions = {}): HttpClient {
         )
       }
 
-      const res = await executeRequest(
-        config,
-        interceptors,
-        defaultRetry,
-        breaker,
-        abortedRef,
-      )
+      const res = await executeRequest(config, interceptors, defaultRetry, breaker, abortedRef)
 
       return res as HttpResponse<T>
     }
 
   const client: HttpClient = {
-    get: <T>(url: string, o?: RequestOptions) =>
-      createMethod("GET")(url, undefined, o) as Promise<HttpResponse<T>>,
-    post: <T>(url: string, body?: unknown, o?: RequestOptions) =>
-      createMethod("POST")(url, body, o) as Promise<HttpResponse<T>>,
-    put: <T>(url: string, body?: unknown, o?: RequestOptions) =>
-      createMethod("PUT")(url, body, o) as Promise<HttpResponse<T>>,
-    delete: <T>(url: string, o?: RequestOptions) =>
-      createMethod("DELETE")(url, undefined, o) as Promise<HttpResponse<T>>,
-    patch: <T>(url: string, body?: unknown, o?: RequestOptions) =>
-      createMethod("PATCH")(url, body, o) as Promise<HttpResponse<T>>,
+    get: <T>(url: string, o?: RequestOptions) => createMethod('GET')(url, undefined, o) as Promise<HttpResponse<T>>,
+    post: <T>(url: string, body?: unknown, o?: RequestOptions) => createMethod('POST')(url, body, o) as Promise<HttpResponse<T>>,
+    put: <T>(url: string, body?: unknown, o?: RequestOptions) => createMethod('PUT')(url, body, o) as Promise<HttpResponse<T>>,
+    delete: <T>(url: string, o?: RequestOptions) => createMethod('DELETE')(url, undefined, o) as Promise<HttpResponse<T>>,
+    patch: <T>(url: string, body?: unknown, o?: RequestOptions) => createMethod('PATCH')(url, body, o) as Promise<HttpResponse<T>>,
     use(interceptor: Interceptor): HttpClient {
       interceptors.push(interceptor)
       return client
@@ -558,14 +518,11 @@ export function createHttpClient(opts: HttpClientOptions = {}): HttpClient {
  * as-is. Sets the `Content-Type` header to `application/json` when no
  * explicit type has been provided.
  */
-function serializeBody(
-  body: unknown,
-  headers: Record<string, string>,
-): string | undefined {
+function serializeBody(body: unknown, headers: Record<string, string>): string | undefined {
   if (body === null || body === undefined) return undefined
-  if (typeof body === "string") return body
-  if (!headers["Content-Type"] && !headers["content-type"]) {
-    headers["Content-Type"] = "application/json"
+  if (typeof body === 'string') return body
+  if (!headers['Content-Type'] && !headers['content-type']) {
+    headers['Content-Type'] = 'application/json'
   }
   return JSON.stringify(body)
 }
@@ -589,16 +546,11 @@ function serializeBody(
  * client.use(RateLimitMiddleware({ maxRequests: 10, windowMs: 1000 }))
  * ```
  */
-export function RateLimitMiddleware(
-  opts: RateLimitMiddlewareOptions,
-): Interceptor {
+export function RateLimitMiddleware(opts: RateLimitMiddlewareOptions): Interceptor {
   const { maxRequests, windowMs, key: keyFn } = opts
 
   // Bucket state: Map<key, { tokens, lastRefill }>
-  const buckets = new Map<
-    string,
-    { tokens: number; lastRefill: number }
-  >()
+  const buckets = new Map<string, { tokens: number; lastRefill: number }>()
 
   function refill(entry: { tokens: number; lastRefill: number }): void {
     const now = Date.now()
@@ -612,7 +564,7 @@ export function RateLimitMiddleware(
 
   return {
     request: async (config: RequestConfig): Promise<RequestConfig> => {
-      const k = keyFn ? keyFn(config) : "__global__"
+      const k = keyFn ? keyFn(config) : '__global__'
       let entry = buckets.get(k)
       if (!entry) {
         entry = { tokens: maxRequests, lastRefill: Date.now() }
@@ -632,7 +584,7 @@ export function RateLimitMiddleware(
         }
         // If still empty after waiting, throw
         if (entry.tokens <= 0) {
-          throw new HttpError(429, "Too Many Requests (rate limited)", null)
+          throw new HttpError(429, 'Too Many Requests (rate limited)', null)
         }
       }
 

@@ -1,3 +1,6 @@
+export type { BarChartData, LineChartData, PieChartData, ScatterChartData, SvgChartOptions } from './svg.js'
+export { svgBarChart, svgLineChart, svgPieChart, svgScatterChart } from './svg.js'
+
 export function sturgesBins(data: number[]): number {
   return Math.ceil(1 + Math.log2(data.length))
 }

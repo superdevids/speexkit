@@ -109,9 +109,18 @@ export function createWSClient(url: string | URL, opts?: WSClientOptions): WSCli
   }
 
   function clearTimers(): void {
-    if (reconnectTimer !== null) { clearTimeout(reconnectTimer); reconnectTimer = null }
-    if (heartbeatTimer !== null) { clearInterval(heartbeatTimer); heartbeatTimer = null }
-    if (pongTimeoutTimer !== null) { clearTimeout(pongTimeoutTimer); pongTimeoutTimer = null }
+    if (reconnectTimer !== null) {
+      clearTimeout(reconnectTimer)
+      reconnectTimer = null
+    }
+    if (heartbeatTimer !== null) {
+      clearInterval(heartbeatTimer)
+      heartbeatTimer = null
+    }
+    if (pongTimeoutTimer !== null) {
+      clearTimeout(pongTimeoutTimer)
+      pongTimeoutTimer = null
+    }
   }
 
   function startHeartbeat(): void {
@@ -120,7 +129,9 @@ export function createWSClient(url: string | URL, opts?: WSClientOptions): WSCli
       if (ws?.readyState === WebSocket.OPEN) {
         try {
           ws.send(JSON.stringify({ type: 'ping' }))
-        } catch { /* connection closed between check and send */ }
+        } catch {
+          /* connection closed between check and send */
+        }
         pongTimeoutTimer = setTimeout(() => {
           emit('close', { code: 4000, reason: 'heartbeat timeout' })
           ws?.close()
@@ -130,8 +141,14 @@ export function createWSClient(url: string | URL, opts?: WSClientOptions): WSCli
   }
 
   function stopHeartbeat(): void {
-    if (heartbeatTimer !== null) { clearInterval(heartbeatTimer); heartbeatTimer = null }
-    if (pongTimeoutTimer !== null) { clearTimeout(pongTimeoutTimer); pongTimeoutTimer = null }
+    if (heartbeatTimer !== null) {
+      clearInterval(heartbeatTimer)
+      heartbeatTimer = null
+    }
+    if (pongTimeoutTimer !== null) {
+      clearTimeout(pongTimeoutTimer)
+      pongTimeoutTimer = null
+    }
   }
 
   function flushQueue(): void {
@@ -149,7 +166,7 @@ export function createWSClient(url: string | URL, opts?: WSClientOptions): WSCli
   function scheduleReconnect(): void {
     if (!shouldReconnect || intentionalClose) return
     if (reconnectAttempts >= maxReconnects) return
-    const delay = Math.min(reconnectDelay * Math.pow(2, reconnectAttempts), maxReconnectDelay)
+    const delay = Math.min(reconnectDelay * 2 ** reconnectAttempts, maxReconnectDelay)
     const jittered = jitter(delay)
     reconnectTimer = setTimeout(() => {
       reconnectAttempts++
@@ -207,7 +224,10 @@ export function createWSClient(url: string | URL, opts?: WSClientOptions): WSCli
         try {
           const parsed = JSON.parse(raw)
           if (parsed.type === 'pong') {
-            if (pongTimeoutTimer !== null) { clearTimeout(pongTimeoutTimer); pongTimeoutTimer = null }
+            if (pongTimeoutTimer !== null) {
+              clearTimeout(pongTimeoutTimer)
+              pongTimeoutTimer = null
+            }
             return
           }
           // Emit custom event from JSON { event, data }
@@ -215,7 +235,9 @@ export function createWSClient(url: string | URL, opts?: WSClientOptions): WSCli
             emit(parsed.event, parsed.data)
             return
           }
-        } catch { /* not JSON, treat as raw message */ }
+        } catch {
+          /* not JSON, treat as raw message */
+        }
       }
 
       emit('message', raw)
@@ -435,7 +457,10 @@ export function createSSEClient(url: string | URL, opts?: SSEClientOptions): SSE
   }
 
   function clearTimers(): void {
-    if (reconnectTimer !== null) { clearTimeout(reconnectTimer); reconnectTimer = null }
+    if (reconnectTimer !== null) {
+      clearTimeout(reconnectTimer)
+      reconnectTimer = null
+    }
   }
 
   function scheduleReconnect(): void {
@@ -517,7 +542,9 @@ export function createSSEClient(url: string | URL, opts?: SSEClientOptions): SSE
             let parsed: any = evt.data
             try {
               parsed = JSON.parse(evt.data)
-            } catch { /* keep raw string */ }
+            } catch {
+              /* keep raw string */
+            }
             const eventName = evt.event ?? 'message'
             emit(eventName, parsed)
           }

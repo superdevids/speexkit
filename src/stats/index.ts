@@ -179,3 +179,226 @@ export function spearmanCorrelation(x: number[], y: number[]): { statistic: numb
   }
   return pearsonCorrelation(rank(x), rank(y))
 }
+
+/**
+ * Lower regularized gamma function P(a, x) = γ(a, x) / Γ(a)
+ * Used for chi-square CDF computation
+ */
+function lowerGammaRegularized(a: number, x: number): number {
+  if (x < 0 || a <= 0) return NaN
+  if (x === 0) return 0
+  const gln = gammaLn(a)
+  let sum = 1 / a
+  let term = 1 / a
+  for (let n = 1; n <= 200; n++) {
+    term *= x / (a + n)
+    sum += term
+    if (Math.abs(term) < Math.abs(sum) * 1e-14) break
+  }
+  return sum * Math.exp(a * Math.log(x) - x - gln)
+}
+
+/**
+ * F-distribution CDF using regularized incomplete beta
+ */
+function fCdf(x: number, dof1: number, dof2: number): number {
+  if (x < 0 || dof1 <= 0 || dof2 <= 0) return NaN
+  if (x === 0) return 0
+  return regularizedIncompleteBeta(dof1 / 2, dof2 / 2, (dof1 * x) / (dof1 * x + dof2))
+}
+
+/**
+ * Chi-square CDF using lower regularized gamma
+ */
+function chiSquareCdf(x: number, dof: number): number {
+  if (x < 0 || dof <= 0) return NaN
+  if (x === 0) return 0
+  return lowerGammaRegularized(dof / 2, x / 2)
+}
+
+/**
+ * Two-tailed p-value from z-score using normal CDF
+ */
+function normalApproximationPValue(z: number): number {
+  return 2 * (1 - normalCDF(Math.abs(z)))
+}
+
+/**
+ * One-way Analysis of Variance (ANOVA)
+ *
+ * Tests whether the means of two or more groups are significantly different.
+ *
+ * @param groups - Two or more arrays of numeric values
+ * @returns Object containing F-statistic and p-value
+ * @throws {Error} If fewer than 2 groups provided or any group is empty
+ *
+ * @example
+ * anovaOneWay([1, 2, 3], [4, 5, 6], [7, 8, 9])
+ * // => { fStatistic: 27, pValue: 0.001 }
+ */
+export function anovaOneWay(...groups: number[][]): { fStatistic: number; pValue: number } {
+  if (groups.length < 2) throw new Error('ANOVA requires at least 2 groups')
+  for (const g of groups) {
+    if (g.length === 0) throw new Error('All groups must have at least one observation')
+  }
+  const k = groups.length
+  let N = 0
+  let grandSum = 0
+  for (const g of groups) {
+    N += g.length
+    for (const v of g) grandSum += v
+  }
+  const grandMean = grandSum / N
+  let ssb = 0
+  let ssw = 0
+  for (const g of groups) {
+    let gSum = 0
+    for (const v of g) gSum += v
+    const gMean = gSum / g.length
+    ssb += g.length * (gMean - grandMean) ** 2
+    for (const v of g) ssw += (v - gMean) ** 2
+  }
+  const dfB = k - 1
+  const dfW = N - k
+  if (dfW === 0) throw new Error('Not enough observations for ANOVA')
+  const msb = ssb / dfB
+  const msw = ssw / dfW
+  if (msw === 0) return { fStatistic: 0, pValue: 1 }
+  const f = msb / msw
+  const p = 1 - fCdf(f, dfB, dfW)
+  return { fStatistic: f, pValue: p }
+}
+
+/**
+ * Chi-square test for independence in a contingency table
+ *
+ * Tests whether two categorical variables are independent.
+ *
+ * @param observed - 2D contingency table of observed frequencies
+ * @returns Object containing chi-square statistic, p-value, and degrees of freedom
+ * @throws {Error} If table has fewer than 2 rows or columns, or rows have inconsistent lengths
+ *
+ * @example
+ * chiSquareTest([[30, 10], [20, 40]])
+ * // => { chi2: 13.17, pValue: 0.0003, dof: 1 }
+ */
+export function chiSquareTest(observed: number[][]): { chi2: number; pValue: number; dof: number } {
+  const rows = observed.length
+  if (rows < 2) throw new Error('Contingency table must have at least 2 rows')
+  const cols = observed[0]!.length
+  if (cols < 2) throw new Error('Contingency table must have at least 2 columns')
+  for (let i = 1; i < rows; i++) {
+    if (observed[i]!.length !== cols) throw new Error('All rows must have the same length')
+  }
+  const rowTotals = new Array(rows)
+  const colTotals = new Array(cols).fill(0)
+  let grandTotal = 0
+  for (let i = 0; i < rows; i++) {
+    let rt = 0
+    for (let j = 0; j < cols; j++) {
+      rt += observed[i]![j]!
+      colTotals[j]! += observed[i]![j]!
+    }
+    rowTotals[i] = rt
+    grandTotal += rt
+  }
+  if (grandTotal === 0) throw new Error('Contingency table total must be greater than zero')
+  let chi2 = 0
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      const expected = (rowTotals[i]! * colTotals[j]!) / grandTotal
+      if (expected > 0) {
+        chi2 += (observed[i]![j]! - expected) ** 2 / expected
+      }
+    }
+  }
+  const dof = (rows - 1) * (cols - 1)
+  const pValue = 1 - chiSquareCdf(chi2, dof)
+  return { chi2, pValue, dof }
+}
+
+/**
+ * Chi-square goodness of fit test
+ *
+ * Tests whether observed frequencies match an expected distribution.
+ *
+ * @param observed - Array of observed frequencies
+ * @param expected - Array of expected frequencies
+ * @returns Object containing chi-square statistic, p-value, and degrees of freedom
+ * @throws {Error} If arrays have different lengths, or fewer than 2 categories
+ *
+ * @example
+ * chiSquareGoodnessOfFit([50, 30, 20], [33.3, 33.3, 33.3])
+ * // => { chi2: 10.5, pValue: 0.005, dof: 2 }
+ */
+export function chiSquareGoodnessOfFit(observed: number[], expected: number[]): { chi2: number; pValue: number; dof: number } {
+  const n = observed.length
+  if (n < 2) throw new Error('Requires at least 2 categories')
+  if (observed.length !== expected.length) throw new Error('observed and expected must have the same length')
+  let chi2 = 0
+  for (let i = 0; i < n; i++) {
+    if (expected[i]! < 0) throw new Error('Expected frequencies must be non-negative')
+    if (expected[i]! > 0) {
+      chi2 += (observed[i]! - expected[i]!) ** 2 / expected[i]!
+    }
+  }
+  const dof = n - 1
+  const pValue = 1 - chiSquareCdf(chi2, dof)
+  return { chi2, pValue, dof }
+}
+
+/**
+ * Mann-Whitney U test (Wilcoxon rank-sum test)
+ *
+ * Non-parametric test for difference between two independent groups.
+ * Uses normal approximation for p-value computation.
+ *
+ * @param x - First group of numeric values
+ * @param y - Second group of numeric values
+ * @returns Object containing U statistic and p-value
+ * @throws {Error} If either group is empty
+ *
+ * @example
+ * mannWhitneyU([1, 2, 3], [4, 5, 6])
+ * // => { uStatistic: 0, pValue: 0.045 }
+ */
+export function mannWhitneyU(x: number[], y: number[]): { uStatistic: number; pValue: number } {
+  if (x.length === 0 || y.length === 0) throw new Error('Both groups must have at least one observation')
+  const n1 = x.length
+  const n2 = y.length
+  const combined = new Array<{ val: number; group: number }>(n1 + n2)
+  for (let i = 0; i < n1; i++) combined[i] = { val: x[i]!, group: 0 }
+  for (let i = 0; i < n2; i++) combined[n1 + i] = { val: y[i]!, group: 1 }
+  combined.sort((a, b) => a.val - b.val)
+  const N = combined.length
+  const ranks = new Array<number>(N)
+  let i = 0
+  while (i < N) {
+    let j = i
+    while (j < N && combined[j]!.val === combined[i]!.val) j++
+    const avgRank = (i + j + 1) / 2
+    for (let k = i; k < j; k++) ranks[k] = avgRank
+    i = j
+  }
+  let r1 = 0
+  for (let k = 0; k < N; k++) {
+    if (combined[k]!.group === 0) r1 += ranks[k]!
+  }
+  const u1 = r1 - (n1 * (n1 + 1)) / 2
+  const u2 = n1 * n2 - u1
+  const uStatistic = Math.min(u1, u2)
+  const mu = (n1 * n2) / 2
+  let tieCorrection = 0
+  i = 0
+  while (i < N) {
+    let j = i
+    while (j < N && combined[j]!.val === combined[i]!.val) j++
+    const t = j - i
+    tieCorrection += t * t * t - t
+    i = j
+  }
+  const denom = Math.sqrt(((n1 * n2) / 12) * (N + 1 - tieCorrection / (N * (N - 1))))
+  if (denom === 0) return { uStatistic, pValue: 1 }
+  const z = (uStatistic - mu) / denom
+  return { uStatistic, pValue: normalApproximationPValue(z) }
+}

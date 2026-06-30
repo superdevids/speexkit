@@ -1,6 +1,6 @@
 # speexkit — Module Reference
 
-v1.4.14 | 500+ exports | 46 modules | 0 deps | 2,544 tests
+v1.4.14 | 500+ exports | 48 modules | 0 deps | 2,544+ tests
 
 > 📋 **[ARCHITECTURE.md](./ARCHITECTURE.md)** — Module architecture, NDArray internals, build & design
 > 📋 **[PRD01.md](./docs/PRD01.md)** — Product roadmap & feature priorities (v1.4.x → v3.0)
@@ -58,13 +58,13 @@ NDArray class: zeros, ones, full, eye, identity, arange, linspace, logspace, ran
 curry, curryRight, partial, partialRight, tap, trace, memoizeSync, memoizeLast, negate, before, after, id, constant, over, apply, comparing, wrapArray, flow, tryCatch, attempt, property, converge, flip, ifElse, when, unless, debounce, throttle, once
 
 ### ml
-StandardScaler, MinMaxScaler, LinearRegression, KMeans, LabelEncoder, KNN, trainTestSplit, confusionMatrix, accuracyScore, r2Score, meanSquaredError, meanAbsoluteError, euclideanDistance, manhattanDistance, cosineSimilarity
+StandardScaler, MinMaxScaler, LinearRegression, LogisticRegression, KMeans, PCA, DecisionTreeClassifier, DBSCAN, KNN, LabelEncoder, OneHotEncoder, trainTestSplit, kFold, crossValScore, confusionMatrix, accuracyScore, r2Score, meanSquaredError, meanAbsoluteError, euclideanDistance, manhattanDistance, cosineSimilarity
 
 ### stats
-gammaLn, erf, normalPDF, normalCDF, binomialPMF, poissonPMF, skewness, kurtosis, quantile, iqr, covariance, ttestInd, pearsonCorrelation, spearmanCorrelation
+gammaLn, erf, normalPDF, normalCDF, binomialPMF, poissonPMF, skewness, kurtosis, quantile, iqr, covariance, anovaOneWay, chiSquareTest, chiSquareGoodnessOfFit, mannWhitneyU, ttestInd, pearsonCorrelation, spearmanCorrelation
 
 ### viz-data
-sturgesBins, freedmanDiaconisBins, histogram, kde, boxPlotData, ecdf, colorMap
+sturgesBins, freedmanDiaconisBins, histogram, kde, boxPlotData, ecdf, colorMap, svgBarChart, svgLineChart, svgScatterChart, svgPieChart
 
 ### dep-exray
 scanProject, generateReport, analyzeUsage, KNOWN_MAPPINGS, KNOWN_CVES. CLI: npx dep-exray .
@@ -145,5 +145,29 @@ File/directory scanner
 
 ### known-mappings
 Well-known type/format mappings
+
+### auth
+signJWT, verifyJWT, decodeJWT, generatePKCE, verifyChallenge, parseBasicAuth
+
+### http
+createHttpClient, middleware, interceptors, RateLimitMiddleware
+
+### serialize
+encodeMsgPack, decodeMsgPack, encodeBase58, decodeBase58, encodeBase62, decodeBase62
+
+### reactive
+signal, computed, effect, batch — framework-agnostic reactivity system
+
+### template
+render, compile — mustache-compatible template engine (variables, sections, inverted sections, partials, comments, dotted paths)
+
+### structures
+Trie (prefix tree), Graph (adjacency list, BFS, DFS, Dijkstra, topoSort), Heap (min/max binary heap), PriorityQueue, LinkedList (doubly-linked), Deque (ring-buffer), BloomFilter (probabilistic membership), DisjointSet (Union-Find), Maybe&lt;T&gt; (Just/Nothing monad), Either&lt;L,R&gt; (Left/Right monad)
+
+### viz-data (extended)
+SVG chart generators: svgBarChart, svgLineChart, svgScatterChart, svgPieChart — zero-dependency inline SVG output
+
+### stats (extended)
+anovaOneWay (one-way ANOVA), chiSquareTest (contingency table independence), chiSquareGoodnessOfFit, mannWhitneyU (Wilcoxon rank-sum)
 
 *Last updated: 2026-06-30*

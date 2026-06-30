@@ -642,10 +642,7 @@ export class EnumSchema<T extends string> extends Schema<T> {
 
     const found = (this.values as readonly string[]).indexOf(value)
     if (found === -1) {
-      throw new ValidationError(
-        `Expected one of: ${this.values.join(', ')}`,
-        [],
-      )
+      throw new ValidationError(`Expected one of: ${this.values.join(', ')}`, [])
     }
 
     return this.values[found]!
@@ -679,10 +676,7 @@ export class LiteralSchema<T extends string | number | boolean> extends Schema<T
 
   parse(value: unknown): T {
     if (value !== this.value) {
-      throw new ValidationError(
-        `Expected literal ${String(this.value)}, got ${String(value)}`,
-        [],
-      )
+      throw new ValidationError(`Expected literal ${String(this.value)}, got ${String(value)}`, [])
     }
     return this.value
   }

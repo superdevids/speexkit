@@ -20,6 +20,24 @@ export {
   timeout,
   waterfall,
 } from './async/index.js'
+// ─── auth (JWT/PKCE) ─────────────────────────────────────
+export { decodeJWT, generatePKCE, parseBasicAuth, signJWT, verifyJWT } from './auth/index.js'
+// ─── cache (LRU/LFU/TTL) ──────────────────────────────────
+export { type CacheStats, CacheStatsCollector, LFUCache, LRUCache, memoizeWithCache, TTLCache } from './cache/index.js'
+// ─── cli (CLI building blocks) ───────────────────────────
+export {
+  type ArgOption,
+  type ArgSpec,
+  colorize,
+  confirm,
+  type ParsedArgs,
+  parseArgs,
+  prompt,
+  renderTable,
+  Spinner,
+  type TableColumn,
+  type TableOptions,
+} from './cli/index.js'
 export type { SortDirection } from './collection/index.js'
 export {
   at,
@@ -58,11 +76,13 @@ export {
   omit,
   omitBy,
   orderBy,
+  paginate,
   partition,
   pick,
   pickBy,
   pluck,
   renameKeys,
+  rotate,
   sample,
   sampleSize,
   shuffle,
@@ -73,6 +93,7 @@ export {
   takeRight,
   toPairs,
   topoSort,
+  transpose,
   tumblingWindows,
   union,
   uniq,
@@ -81,9 +102,6 @@ export {
   unzip,
   without,
   zip,
-  paginate,
-  rotate,
-  transpose,
 } from './collection/index.js'
 // ─── color (utilities) ──────────────────────────────────
 export {
@@ -109,6 +127,9 @@ export {
   rgbToHsl,
   saturate,
 } from './color/index.js'
+export type { ConfigSource, LoadConfigOptions } from './config/index.js'
+// ─── config (layered configuration) ────────────────────────
+export { cliSource, envSource, fileSource, loadConfig, maskSecrets, watchConfig } from './config/index.js'
 export type {
   DebouncedFunction,
   DebounceOptions,
@@ -164,6 +185,8 @@ export {
   formatDuration,
   formatInTimezone,
   fromUnix,
+  getHolidays,
+  humanizeDuration,
   InvalidDateError,
   isAfter,
   isBefore,
@@ -208,8 +231,6 @@ export {
   toTimezone,
   unix,
   weekOfYear,
-  humanizeDuration,
-  getHolidays,
 } from './date/index.js'
 export type {
   DependencyInfo,
@@ -226,20 +247,62 @@ export {
   KNOWN_MAPPINGS,
   scanProject,
 } from './dep-exray/index.js'
-export type { ErrorCode, Result, OkImpl, ErrImpl } from './error/index.js'
+// ─── diff (text & object diff) ───────────────────────────
+export { type DiffChunk, type ObjectDiffResult, objectDiff, patch, textDiff, unifiedDiff } from './diff/index.js'
+// ─── dom (browser utilities) ──────────────────────────────
+export {
+  copyToClipboard,
+  debounceResize,
+  downloadFile,
+  getViewport,
+  isTouchDevice,
+  lockScroll,
+  onClickOutside,
+  onVisible,
+  readFileAsDataURL,
+  readFileAsText,
+  scrollToElement,
+  scrollToTop,
+  trapFocus,
+} from './dom/index.js'
+export type { ErrImpl, ErrorCode, OkImpl, Result } from './error/index.js'
 // ─── error (typed errors + result type) ─────────────────
 export {
   collectErrors,
   createError,
-  err,
   Err,
+  err,
   isTypedError,
   MultiError,
-  ok,
   Ok,
+  ok,
   TypedError,
 } from './error/index.js'
-
+// ─── events (typed EventEmitter) ──────────────────────────
+export { createPubSub, EventBus, EventEmitter, type WildcardPayload } from './events/index.js'
+// ─── feature-flags ─────────────────────────────────────────
+export {
+  bucketUser,
+  createFlagStore,
+  type FlagDefinition,
+  type FlagStore,
+  type FlagStoreOptions,
+  hashString,
+} from './feature-flags/index.js'
+// ─── geo (geospatial utilities) ──────────────────────────
+export { boundingBox, type Coord, decodeGeohash, geohash, haversineDistance, isPointInPolygon, midpoint, toDMS } from './geo/index.js'
+// ─── http (HTTP client) ────────────────────────────────────
+export {
+  createHttpClient,
+  type HttpClient,
+  type HttpClientOptions,
+  HttpError,
+  type HttpResponse,
+  type Interceptor,
+  type RateLimitMiddlewareOptions,
+} from './http/index.js'
+// ─── intl (internationalization) ─────────────────────────
+export { createTranslator, formatCurrency, formatList, formatNumber, formatRelativeTime, pluralize, timeAgo } from './intl/index.js'
 export type { CsvOptions } from './io/index.js'
 export {
   env,
@@ -247,12 +310,12 @@ export {
   envBool,
   envInt,
   parseCsv,
+  readJSONFile,
   safeJsonParse,
   safeJsonStringify,
   stringifyCsv,
-  readJSONFile,
-  writeJSONFile,
   watchFile,
+  writeJSONFile,
 } from './io/index.js'
 export type {
   LogLevel,
@@ -313,19 +376,52 @@ export {
   accuracyScore,
   confusionMatrix,
   cosineSimilarity,
+  crossValScore,
   euclideanDistance,
   KMeans,
   KNN,
+  kFold,
   LabelEncoder,
   LinearRegression,
+  LogisticRegression,
   MinMaxScaler,
   manhattanDistance,
   meanAbsoluteError,
   meanSquaredError,
+  OneHotEncoder,
+  PCA,
   r2Score,
   StandardScaler,
   trainTestSplit,
 } from './ml/index.js'
+// ─── mock (fake data generator) ──────────────────────────
+export {
+  fakeAddress,
+  fakeAvatar,
+  fakeBoolean,
+  fakeCity,
+  fakeColor,
+  fakeCompany,
+  fakeDate,
+  fakeDepartment,
+  fakeEmail,
+  fakeFirstName,
+  fakeFloat,
+  fakeFromSchema,
+  fakeFullName,
+  fakeInt,
+  fakeJobTitle,
+  fakeLastName,
+  fakeLorem,
+  fakeName,
+  fakeParagraph,
+  fakePhone,
+  fakeSentence,
+  fakeStreet,
+  fakeUrl,
+  fakeUUID,
+  seedRandom,
+} from './mock/index.js'
 // ─── nlarray (NumPy-like NDArray) ──────────────────────
 export { cos, exp, log, NDArray, sin, sqrt } from './nlarray/index.js'
 // ─── nlfunction (functional programming) ────────────────
@@ -357,6 +453,20 @@ export {
   when,
   wrapArray,
 } from './nlfunction/index.js'
+// ─── observability (metrics & tracing) ─────────────────────
+export {
+  Counter,
+  Gauge,
+  getCorrelationId,
+  Histogram,
+  MetricsRegistry,
+  type Span,
+  type SpanTreeNode,
+  setCorrelationId,
+  Tracer,
+  toOTLPJson,
+  withCorrelationId,
+} from './observability/index.js'
 export type { ParsedPath } from './path/index.js'
 export {
   basename,
@@ -370,14 +480,74 @@ export {
   relative,
   resolve,
 } from './path/index.js'
+export type { Job, JobQueueOptions } from './queue/index.js'
+// ─── queue (job queue & scheduling) ──────────────────────
+export { cron, Debouncer, JobQueue, scheduleEvery } from './queue/index.js'
+// ─── reactive (signals, computed, effects) ─────────────────
+export { type Computed, computed, type Effect, effect, type Signal, signal } from './reactive/index.js'
+// ─── realtime (WebSocket & SSE) ────────────────────────────
+export {
+  createSSEClient,
+  createWSClient,
+  type SSEClient,
+  type SSEClientOptions,
+  type WSClient,
+  type WSClientOptions,
+} from './realtime/index.js'
+// ─── resilience (circuit breaker, bulkhead, retry) ────────
+export {
+  Bulkhead,
+  CircuitBreaker,
+  type CircuitBreakerOptions,
+  type CircuitState,
+  Fallback,
+  type RetryWithBackoffOptions,
+  retryWithBackoff,
+  Timeout,
+} from './resilience/index.js'
+// ─── schema (zod-lite) ────────────────────────────────────
+export {
+  ArraySchema,
+  BooleanSchema,
+  EnumSchema,
+  type Infer,
+  LiteralSchema,
+  NullableSchema,
+  NumberSchema,
+  ObjectSchema,
+  OptionalSchema,
+  Schema,
+  StringSchema,
+  s,
+  ValidationError,
+} from './schema/index.js'
+// ─── security (sanitization & hardening) ───────────────────
+export { createRateLimiter, csrfToken, detectSecrets, maskPII, type SecretMatch, sanitizeHtml, verifyCsrfToken } from './security/index.js'
+// ─── serialize (MessagePack, binary) ───────────────────────
+export {
+  BufferReader,
+  BufferWriter,
+  decodeBase58,
+  decodeBase62,
+  decodeMsgPack,
+  encodeBase58,
+  encodeBase62,
+  encodeMsgPack,
+} from './serialize/index.js'
+// ─── state-machine (FSM) ─────────────────────────────────
+export { createMachine, type Machine, type MachineConfig, type MachineContext } from './state-machine/index.js'
 // ─── stats (statistics) ────────────────────────────────
 export {
+  anovaOneWay,
   binomialPMF,
+  chiSquareGoodnessOfFit,
+  chiSquareTest,
   covariance,
   erf,
   gammaLn,
   iqr,
   kurtosis,
+  mannWhitneyU,
   normalCDF,
   normalPDF,
   pearsonCorrelation,
@@ -387,6 +557,18 @@ export {
   spearmanCorrelation,
   ttestInd,
 } from './stats/index.js'
+// ─── storage (universal storage wrapper) ──────────────────
+export {
+  type CookieDriverOptions,
+  cookieDriver,
+  createStorage,
+  localStorageDriver,
+  memoryDriver,
+  Storage,
+  type StorageDriver,
+  type StorageOptions,
+  sessionStorageDriver,
+} from './storage/index.js'
 export {
   camelCase,
   capitalize,
@@ -438,6 +620,21 @@ export {
   words,
   wrap,
 } from './string/index.js'
+// ─── structures (Trie, Graph, Heap, Monads, etc) ────────
+export {
+  BloomFilter,
+  Deque,
+  DisjointSet,
+  Either,
+  Graph,
+  Heap,
+  LinkedList,
+  Maybe,
+  PriorityQueue,
+  Trie,
+} from './structures/index.js'
+// ─── template (mustache-compatible template engine) ────────
+export { compile, render } from './template/index.js'
 export {
   assertDefined,
   assertType,
@@ -467,6 +664,8 @@ export {
   isWeakMap,
   isWeakSet,
 } from './type/index.js'
+// ─── units (unit conversion) ─────────────────────────────
+export { convert, convertWithCategory, getUnitCategory, isConvertible, UNIT_CATEGORIES } from './units/index.js'
 // ─── validation ────────────────────────────────────────
 export {
   isAlpha,
@@ -498,6 +697,13 @@ export {
   isUUID,
   matches,
 } from './validation/index.js'
+export type {
+  BarChartData,
+  LineChartData,
+  PieChartData,
+  ScatterChartData,
+  SvgChartOptions,
+} from './viz-data/index.js'
 // ─── viz-data (visualization data) ─────────────────────
 export {
   boxPlotData,
@@ -507,52 +713,8 @@ export {
   histogram,
   kde,
   sturgesBins,
+  svgBarChart,
+  svgLineChart,
+  svgPieChart,
+  svgScatterChart,
 } from './viz-data/index.js'
-// ─── events (typed EventEmitter) ──────────────────────────
-export { EventBus, EventEmitter, createPubSub, type WildcardPayload } from './events/index.js'
-// ─── cache (LRU/LFU/TTL) ──────────────────────────────────
-export { CacheStatsCollector, LRUCache, LFUCache, TTLCache, memoizeWithCache, type CacheStats } from './cache/index.js'
-// ─── resilience (circuit breaker, bulkhead, retry) ────────
-export { Bulkhead, CircuitBreaker, Fallback, Timeout, retryWithBackoff, type CircuitBreakerOptions, type CircuitState, type RetryWithBackoffOptions } from './resilience/index.js'
-// ─── auth (JWT/PKCE) ─────────────────────────────────────
-export { decodeJWT, generatePKCE, parseBasicAuth, signJWT, verifyJWT } from './auth/index.js'
-// ─── schema (zod-lite) ────────────────────────────────────
-export { ValidationError, Schema, OptionalSchema, NullableSchema, StringSchema, NumberSchema, BooleanSchema, ArraySchema, ObjectSchema, EnumSchema, LiteralSchema, s, type Infer } from './schema/index.js'
-// ─── storage (universal storage wrapper) ──────────────────
-export { createStorage, Storage, memoryDriver, localStorageDriver, sessionStorageDriver, cookieDriver, type StorageDriver, type StorageOptions, type CookieDriverOptions } from './storage/index.js'
-// ─── state-machine (FSM) ─────────────────────────────────
-export { createMachine, type Machine, type MachineConfig, type MachineContext } from './state-machine/index.js'
-// ─── structures (Trie, Graph, Heap, etc) ─────────────────
-export { BloomFilter, Deque, DisjointSet, Graph, Heap, LinkedList, PriorityQueue, Trie } from './structures/index.js'
-// ─── mock (fake data generator) ──────────────────────────
-export { fakeAddress, fakeAvatar, fakeBoolean, fakeCity, fakeColor, fakeCompany, fakeDate, fakeDepartment, fakeEmail, fakeFirstName, fakeFloat, fakeFullName, fakeInt, fakeJobTitle, fakeLastName, fakeLorem, fakeName, fakeParagraph, fakePhone, fakeSentence, fakeStreet, fakeUrl, fakeUUID, fakeFromSchema, seedRandom } from './mock/index.js'
-// ─── diff (text & object diff) ───────────────────────────
-export { objectDiff, patch, textDiff, unifiedDiff, type DiffChunk, type ObjectDiffResult } from './diff/index.js'
-// ─── queue (job queue & scheduling) ──────────────────────
-export { Debouncer, JobQueue, cron, scheduleEvery } from './queue/index.js'
-export type { Job, JobQueueOptions } from './queue/index.js'
-// ─── intl (internationalization) ─────────────────────────
-export { createTranslator, formatCurrency, formatList, formatNumber, formatRelativeTime, pluralize, timeAgo } from './intl/index.js'
-// ─── cli (CLI building blocks) ───────────────────────────
-export { Spinner, renderTable, colorize, confirm, parseArgs, prompt, type ArgOption, type ArgSpec, type ParsedArgs, type TableColumn, type TableOptions } from './cli/index.js'
-// ─── geo (geospatial utilities) ──────────────────────────
-export { boundingBox, decodeGeohash, geohash, haversineDistance, isPointInPolygon, midpoint, toDMS, type Coord } from './geo/index.js'
-// ─── units (unit conversion) ─────────────────────────────
-export { UNIT_CATEGORIES, convert, convertWithCategory, getUnitCategory, isConvertible } from './units/index.js'
-// ─── http (HTTP client) ────────────────────────────────────
-export { HttpError, createHttpClient, type HttpClient, type HttpClientOptions, type HttpResponse, type Interceptor, type RateLimitMiddlewareOptions } from './http/index.js'
-// ─── security (sanitization & hardening) ───────────────────
-export { createRateLimiter, csrfToken, detectSecrets, maskPII, sanitizeHtml, verifyCsrfToken, type SecretMatch } from './security/index.js'
-// ─── config (layered configuration) ────────────────────────
-export { cliSource, envSource, fileSource, loadConfig, maskSecrets, watchConfig } from './config/index.js'
-export type { ConfigSource, LoadConfigOptions } from './config/index.js'
-// ─── observability (metrics & tracing) ─────────────────────
-export { Counter, Gauge, Histogram, MetricsRegistry, Tracer, getCorrelationId, setCorrelationId, toOTLPJson, withCorrelationId, type Span, type SpanTreeNode } from './observability/index.js'
-// ─── realtime (WebSocket & SSE) ────────────────────────────
-export { createSSEClient, createWSClient, type SSEClient, type SSEClientOptions, type WSClient, type WSClientOptions } from './realtime/index.js'
-// ─── serialize (MessagePack, binary) ───────────────────────
-export { BufferReader, BufferWriter, decodeBase58, decodeBase62, decodeMsgPack, encodeBase58, encodeBase62, encodeMsgPack } from './serialize/index.js'
-// ─── feature-flags ─────────────────────────────────────────
-export { bucketUser, createFlagStore, hashString, type FlagDefinition, type FlagStore, type FlagStoreOptions } from './feature-flags/index.js'
-// ─── dom (browser utilities) ──────────────────────────────
-export { copyToClipboard, debounceResize, downloadFile, getViewport, isTouchDevice, lockScroll, onClickOutside, onVisible, readFileAsDataURL, readFileAsText, scrollToElement, scrollToTop, trapFocus } from './dom/index.js'

@@ -38,3 +38,26 @@ export interface ScannerConfig {
   verbose?: boolean
   jsonOutput?: boolean
 }
+
+export interface BundleSizeEntry {
+  filePath: string
+  size: number
+  sizeFormatted: string
+}
+
+export interface BundleSizeResult {
+  totalFiles: number
+  totalSize: number
+  totalSizeFormatted: string
+  largestFiles: BundleSizeEntry[]
+  groupedByDir: Record<string, { files: number; totalSize: number; totalSizeFormatted: string }>
+}
+
+export interface CliOptions {
+  path: string
+  json: boolean
+  verbose: boolean
+  fix: boolean
+  diagnostics: boolean
+  bundleSize: boolean
+}

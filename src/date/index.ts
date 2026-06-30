@@ -1345,10 +1345,7 @@ function approximateEaster(year: number): Date {
  * getHolidays('ID', 2024)
  * getHolidays('US', 2024)
  */
-export function getHolidays(
-  country: string,
-  year: number,
-): { name: string; date: Date; type: 'public' | 'observance' }[] {
+export function getHolidays(country: string, year: number): { name: string; date: Date; type: 'public' | 'observance' }[] {
   if (country === 'ID') {
     const chinese = INDONESIAN_HOLIDAYS[year] ?? [1, 29]
     const nyepi = NYEPI_DATES[year] ?? [3, 20]

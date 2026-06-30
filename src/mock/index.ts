@@ -42,24 +42,97 @@ function _pick<T>(arr: readonly T[]): T {
 // ---------------------------------------------------------------------------
 
 const _firstNamesMale: readonly string[] = [
-  'Adi', 'Budi', 'Chandra', 'Dedi', 'Eko', 'Fitri', 'Gilang', 'Hendra',
-  'Irwan', 'Joko', 'Kevin', 'Lucas', 'Michael', 'Nathan', 'Oliver',
-  'Pramono', 'Rizky', 'Samuel', 'Teguh', 'Wahyu', 'Alexander', 'Benjamin',
-  'Daniel', 'Ethan', 'Gabriel', 'Henry', 'Ivan', 'James', 'Ryan',
+  'Adi',
+  'Budi',
+  'Chandra',
+  'Dedi',
+  'Eko',
+  'Fitri',
+  'Gilang',
+  'Hendra',
+  'Irwan',
+  'Joko',
+  'Kevin',
+  'Lucas',
+  'Michael',
+  'Nathan',
+  'Oliver',
+  'Pramono',
+  'Rizky',
+  'Samuel',
+  'Teguh',
+  'Wahyu',
+  'Alexander',
+  'Benjamin',
+  'Daniel',
+  'Ethan',
+  'Gabriel',
+  'Henry',
+  'Ivan',
+  'James',
+  'Ryan',
 ]
 
 const _firstNamesFemale: readonly string[] = [
-  'Ani', 'Bella', 'Citra', 'Dewi', 'Eva', 'Fitriani', 'Gita', 'Hani',
-  'Indah', 'Jessica', 'Kartika', 'Laura', 'Maria', 'Nadia', 'Olivia',
-  'Putri', 'Rachel', 'Sari', 'Tina', 'Utami', 'Vina', 'Wulan',
-  'Amelia', 'Clara', 'Emma', 'Grace', 'Isabella', 'Maya', 'Sarah',
+  'Ani',
+  'Bella',
+  'Citra',
+  'Dewi',
+  'Eva',
+  'Fitriani',
+  'Gita',
+  'Hani',
+  'Indah',
+  'Jessica',
+  'Kartika',
+  'Laura',
+  'Maria',
+  'Nadia',
+  'Olivia',
+  'Putri',
+  'Rachel',
+  'Sari',
+  'Tina',
+  'Utami',
+  'Vina',
+  'Wulan',
+  'Amelia',
+  'Clara',
+  'Emma',
+  'Grace',
+  'Isabella',
+  'Maya',
+  'Sarah',
 ]
 
 const _lastNames: readonly string[] = [
-  'Adinata', 'Baskoro', 'Cahyadi', 'Darmawan', 'Effendi', 'Firmansyah',
-  'Gunawan', 'Hartono', 'Irawan', 'Jaya', 'Kusuma', 'Lestari', 'Maulana',
-  'Nugroho', 'Pratama', 'Rahman', 'Santoso', 'Tambunan', 'Utomo', 'Wijaya',
-  'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller',
+  'Adinata',
+  'Baskoro',
+  'Cahyadi',
+  'Darmawan',
+  'Effendi',
+  'Firmansyah',
+  'Gunawan',
+  'Hartono',
+  'Irawan',
+  'Jaya',
+  'Kusuma',
+  'Lestari',
+  'Maulana',
+  'Nugroho',
+  'Pratama',
+  'Rahman',
+  'Santoso',
+  'Tambunan',
+  'Utomo',
+  'Wijaya',
+  'Smith',
+  'Johnson',
+  'Williams',
+  'Brown',
+  'Jones',
+  'Garcia',
+  'Miller',
 ]
 
 // ---------------------------------------------------------------------------
@@ -70,9 +143,7 @@ const _lastNames: readonly string[] = [
  * Return a random first name (male or female).
  */
 export function fakeFirstName(): string {
-  return _random() < 0.5
-    ? _pick(_firstNamesMale)
-    : _pick(_firstNamesFemale)
+  return _random() < 0.5 ? _pick(_firstNamesMale) : _pick(_firstNamesFemale)
 }
 
 /**
@@ -93,14 +164,8 @@ export function fakeName(): string {
  * Return an object with firstName, lastName, and fullName.
  * Optionally restrict the gender pool.
  */
-export function fakeFullName(
-  gender?: 'male' | 'female',
-): { firstName: string; lastName: string; fullName: string } {
-  const firstName = gender === 'male'
-    ? _pick(_firstNamesMale)
-    : gender === 'female'
-      ? _pick(_firstNamesFemale)
-      : fakeFirstName()
+export function fakeFullName(gender?: 'male' | 'female'): { firstName: string; lastName: string; fullName: string } {
+  const firstName = gender === 'male' ? _pick(_firstNamesMale) : gender === 'female' ? _pick(_firstNamesFemale) : fakeFirstName()
   const lastName = fakeLastName()
   return { firstName, lastName, fullName: `${firstName} ${lastName}` }
 }
@@ -152,17 +217,7 @@ export function fakeUUID(): string {
     }
     return out
   }
-  return (
-    hex(8) +
-    '-' +
-    hex(4) +
-    '-4' +
-    hex(3) +
-    '-a' +
-    hex(3) +
-    '-' +
-    hex(12)
-  )
+  return hex(8) + '-' + hex(4) + '-4' + hex(3) + '-a' + hex(3) + '-' + hex(12)
 }
 
 // ---------------------------------------------------------------------------
@@ -170,30 +225,87 @@ export function fakeUUID(): string {
 // ---------------------------------------------------------------------------
 
 const _cities: readonly string[] = [
-  'Jakarta', 'Surabaya', 'Bandung', 'Medan', 'Semarang', 'Makassar',
-  'Tangerang', 'Denpasar', 'Palembang', 'Yogyakarta', 'Malang', 'Bekasi',
-  'Depok', 'Solo', 'Manado', 'Banjarmasin', 'Pontianak', 'Samarinda',
-  'Padang', 'Batam',
+  'Jakarta',
+  'Surabaya',
+  'Bandung',
+  'Medan',
+  'Semarang',
+  'Makassar',
+  'Tangerang',
+  'Denpasar',
+  'Palembang',
+  'Yogyakarta',
+  'Malang',
+  'Bekasi',
+  'Depok',
+  'Solo',
+  'Manado',
+  'Banjarmasin',
+  'Pontianak',
+  'Samarinda',
+  'Padang',
+  'Batam',
 ]
 
 const _states: readonly string[] = [
-  'DKI Jakarta', 'Jawa Barat', 'Jawa Tengah', 'Jawa Timur',
-  'Sumatera Utara', 'Sulawesi Selatan', 'Bali', 'Kalimantan Timur',
-  'Sumatera Selatan', 'Lampung', 'Banten', 'Kalimantan Selatan',
+  'DKI Jakarta',
+  'Jawa Barat',
+  'Jawa Tengah',
+  'Jawa Timur',
+  'Sumatera Utara',
+  'Sulawesi Selatan',
+  'Bali',
+  'Kalimantan Timur',
+  'Sumatera Selatan',
+  'Lampung',
+  'Banten',
+  'Kalimantan Selatan',
 ]
 
 const _streetNames: readonly string[] = [
-  'Merdeka', 'Sudirman', 'Thamrin', 'Gajah Mada', 'Hayam Wuruk',
-  'Diponegoro', 'Ahmad Yani', 'Pahlawan', 'Kemerdekaan', 'Sukarno Hatta',
-  'Cendrawasih', 'Anggrek', 'Mawar', 'Melati', 'Kenanga',
-  'Flamboyan', 'Kartini', 'Pattimura', 'Sisingamangaraja', 'Imam Bonjol',
+  'Merdeka',
+  'Sudirman',
+  'Thamrin',
+  'Gajah Mada',
+  'Hayam Wuruk',
+  'Diponegoro',
+  'Ahmad Yani',
+  'Pahlawan',
+  'Kemerdekaan',
+  'Sukarno Hatta',
+  'Cendrawasih',
+  'Anggrek',
+  'Mawar',
+  'Melati',
+  'Kenanga',
+  'Flamboyan',
+  'Kartini',
+  'Pattimura',
+  'Sisingamangaraja',
+  'Imam Bonjol',
 ]
 
 const _zips: readonly string[] = [
-  '10110', '10220', '40115', '60271', '50131', '90221',
-  '15118', '80231', '30121', '55281', '65111', '17111',
-  '16421', '57111', '95111', '70111', '78111', '75111',
-  '25111', '29411',
+  '10110',
+  '10220',
+  '40115',
+  '60271',
+  '50131',
+  '90221',
+  '15118',
+  '80231',
+  '30121',
+  '55281',
+  '65111',
+  '17111',
+  '16421',
+  '57111',
+  '95111',
+  '70111',
+  '78111',
+  '75111',
+  '25111',
+  '29411',
 ]
 
 /**
@@ -235,12 +347,36 @@ export function fakeAddress(): {
 // ---------------------------------------------------------------------------
 
 const _companies: readonly string[] = [
-  'Pertamina', 'Telkom Indonesia', 'Bank Mandiri', 'Gojek', 'Tokopedia',
-  'Bukalapak', 'Traveloka', 'Krakatau Steel', 'Semen Indonesia', 'Indofood',
-  'Kalbe Farma', 'Unilever Indonesia', 'Astra International', 'Mayora Indah',
-  'Alfamart', 'Indomaret', 'Garuda Indonesia', 'Sriwijaya Air', 'Lion Air',
-  'BNI', 'BRI', 'BCA', 'Dana', 'OVO', 'Sea Group', 'Shopee Indonesia',
-  'Blibli', 'Sociolla', 'Zalora Indonesia', 'JD.id',
+  'Pertamina',
+  'Telkom Indonesia',
+  'Bank Mandiri',
+  'Gojek',
+  'Tokopedia',
+  'Bukalapak',
+  'Traveloka',
+  'Krakatau Steel',
+  'Semen Indonesia',
+  'Indofood',
+  'Kalbe Farma',
+  'Unilever Indonesia',
+  'Astra International',
+  'Mayora Indah',
+  'Alfamart',
+  'Indomaret',
+  'Garuda Indonesia',
+  'Sriwijaya Air',
+  'Lion Air',
+  'BNI',
+  'BRI',
+  'BCA',
+  'Dana',
+  'OVO',
+  'Sea Group',
+  'Shopee Indonesia',
+  'Blibli',
+  'Sociolla',
+  'Zalora Indonesia',
+  'JD.id',
 ]
 
 /**
@@ -251,21 +387,57 @@ export function fakeCompany(): string {
 }
 
 const _jobTitles: readonly string[] = [
-  'Software Engineer', 'Data Scientist', 'Product Manager', 'UI/UX Designer',
-  'DevOps Engineer', 'Backend Developer', 'Frontend Developer', 'Full Stack Developer',
-  'Quality Assurance', 'System Analyst', 'IT Manager', 'CTO', 'CEO',
-  'Marketing Manager', 'Sales Executive', 'HR Manager', 'Finance Analyst',
-  'Business Analyst', 'Project Manager', 'Scrum Master', 'Tech Lead',
-  'Cloud Architect', 'Security Engineer', 'Database Administrator',
-  'Network Engineer', 'Mobile Developer', 'Machine Learning Engineer',
-  'Data Analyst', 'Content Writer', 'Graphic Designer',
-  'Customer Support', 'Operations Manager', 'Legal Counsel',
+  'Software Engineer',
+  'Data Scientist',
+  'Product Manager',
+  'UI/UX Designer',
+  'DevOps Engineer',
+  'Backend Developer',
+  'Frontend Developer',
+  'Full Stack Developer',
+  'Quality Assurance',
+  'System Analyst',
+  'IT Manager',
+  'CTO',
+  'CEO',
+  'Marketing Manager',
+  'Sales Executive',
+  'HR Manager',
+  'Finance Analyst',
+  'Business Analyst',
+  'Project Manager',
+  'Scrum Master',
+  'Tech Lead',
+  'Cloud Architect',
+  'Security Engineer',
+  'Database Administrator',
+  'Network Engineer',
+  'Mobile Developer',
+  'Machine Learning Engineer',
+  'Data Analyst',
+  'Content Writer',
+  'Graphic Designer',
+  'Customer Support',
+  'Operations Manager',
+  'Legal Counsel',
 ]
 
 const _departments: readonly string[] = [
-  'Engineering', 'Product', 'Design', 'Marketing', 'Sales',
-  'Human Resources', 'Finance', 'Operations', 'Legal', 'Customer Support',
-  'Research & Development', 'IT', 'Security', 'Data', 'Business Development',
+  'Engineering',
+  'Product',
+  'Design',
+  'Marketing',
+  'Sales',
+  'Human Resources',
+  'Finance',
+  'Operations',
+  'Legal',
+  'Customer Support',
+  'Research & Development',
+  'IT',
+  'Security',
+  'Data',
+  'Business Development',
 ]
 
 /**
@@ -287,28 +459,154 @@ export function fakeDepartment(): string {
 // ---------------------------------------------------------------------------
 
 const _words: readonly string[] = [
-  'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing',
-  'elit', 'sed', 'do', 'eiusmod', 'tempor', 'incididunt', 'ut', 'labore',
-  'et', 'dolore', 'magna', 'aliqua', 'enim', 'ad', 'minim', 'veniam',
-  'quis', 'nostrud', 'exercitation', 'ullamco', 'laboris', 'nisi', 'aliquip',
-  'ex', 'ea', 'commodo', 'consequat', 'duis', 'aute', 'irure', 'reprehenderit',
-  'voluptate', 'velit', 'esse', 'cillum', 'eu', 'fugiat', 'nulla', 'pariatur',
-  'excepteur', 'sint', 'occaecat', 'cupidatat', 'non', 'proident', 'sunt',
-  'culpa', 'qui', 'officia', 'deserunt', 'mollit', 'anim', 'id', 'est',
-  'laborum', 'fusce', 'vitae', 'erat', 'neque', 'tellus', 'lacus',
-  'phasellus', 'molestie', 'semper', 'auctor', 'mauris', 'turpis', 'massa',
-  'nunc', 'feugiat', 'libero', 'vel', 'maximus', 'blandit', 'justo',
-  'suscipit', 'sem', 'metus', 'porttitor', 'lectus', 'urna', 'donec',
-  'iaculis', 'risus', 'ornare', 'dapibus', 'sapien', 'scelerisque',
-  'hendrerit', 'gravida', 'egestas', 'imperdiet', 'placerat', 'fermentum',
-  'pretium', 'congue', 'tortor', 'facilisis', 'sollicitudin', 'vestibulum',
-  'odio', 'dignissim', 'ultricies', 'elementum', 'tristique', 'efficitur',
-  'malesuada', 'nibh', 'eleifend', 'sodales', 'rutrum', 'interdum',
-  'habitasse', 'platea', 'dictumst', 'etiam', 'viverra', 'curabitur',
-  'vivamus', 'arcu', 'tempus', 'cras', 'convallis', 'venenatis',
-  'nullam', 'suspendisse', 'potenti', 'lobortis', 'faucibus',
-  'aenean', 'pellentesque', 'pulvinar', 'aliquam', 'purus', 'montes',
-  'nascetur', 'ridiculus', 'mus', 'integer', 'ante', 'metus',
+  'lorem',
+  'ipsum',
+  'dolor',
+  'sit',
+  'amet',
+  'consectetur',
+  'adipiscing',
+  'elit',
+  'sed',
+  'do',
+  'eiusmod',
+  'tempor',
+  'incididunt',
+  'ut',
+  'labore',
+  'et',
+  'dolore',
+  'magna',
+  'aliqua',
+  'enim',
+  'ad',
+  'minim',
+  'veniam',
+  'quis',
+  'nostrud',
+  'exercitation',
+  'ullamco',
+  'laboris',
+  'nisi',
+  'aliquip',
+  'ex',
+  'ea',
+  'commodo',
+  'consequat',
+  'duis',
+  'aute',
+  'irure',
+  'reprehenderit',
+  'voluptate',
+  'velit',
+  'esse',
+  'cillum',
+  'eu',
+  'fugiat',
+  'nulla',
+  'pariatur',
+  'excepteur',
+  'sint',
+  'occaecat',
+  'cupidatat',
+  'non',
+  'proident',
+  'sunt',
+  'culpa',
+  'qui',
+  'officia',
+  'deserunt',
+  'mollit',
+  'anim',
+  'id',
+  'est',
+  'laborum',
+  'fusce',
+  'vitae',
+  'erat',
+  'neque',
+  'tellus',
+  'lacus',
+  'phasellus',
+  'molestie',
+  'semper',
+  'auctor',
+  'mauris',
+  'turpis',
+  'massa',
+  'nunc',
+  'feugiat',
+  'libero',
+  'vel',
+  'maximus',
+  'blandit',
+  'justo',
+  'suscipit',
+  'sem',
+  'metus',
+  'porttitor',
+  'lectus',
+  'urna',
+  'donec',
+  'iaculis',
+  'risus',
+  'ornare',
+  'dapibus',
+  'sapien',
+  'scelerisque',
+  'hendrerit',
+  'gravida',
+  'egestas',
+  'imperdiet',
+  'placerat',
+  'fermentum',
+  'pretium',
+  'congue',
+  'tortor',
+  'facilisis',
+  'sollicitudin',
+  'vestibulum',
+  'odio',
+  'dignissim',
+  'ultricies',
+  'elementum',
+  'tristique',
+  'efficitur',
+  'malesuada',
+  'nibh',
+  'eleifend',
+  'sodales',
+  'rutrum',
+  'interdum',
+  'habitasse',
+  'platea',
+  'dictumst',
+  'etiam',
+  'viverra',
+  'curabitur',
+  'vivamus',
+  'arcu',
+  'tempus',
+  'cras',
+  'convallis',
+  'venenatis',
+  'nullam',
+  'suspendisse',
+  'potenti',
+  'lobortis',
+  'faucibus',
+  'aenean',
+  'pellentesque',
+  'pulvinar',
+  'aliquam',
+  'purus',
+  'montes',
+  'nascetur',
+  'ridiculus',
+  'mus',
+  'integer',
+  'ante',
+  'metus',
 ]
 
 /**
@@ -438,11 +736,7 @@ export function fakeAvatar(gender?: 'male' | 'female'): string {
 export function fakeFromSchema(schema: any): any {
   // If it quacks like a Zod/Valibot/arktype schema, try to extract a description.
   if (schema && typeof schema.parse === 'function') {
-    const desc: string =
-      (schema._def?.description as string | undefined) ??
-      schema.description ??
-      schema.constructor?.name ??
-      ''
+    const desc: string = (schema._def?.description as string | undefined) ?? schema.description ?? schema.constructor?.name ?? ''
     // Fall through to plain-object branch with a generic hint.
     return _generateFromDescription(desc)
   }

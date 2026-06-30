@@ -105,10 +105,7 @@ function myersDiffInternal(aLines: string[], bLines: string[]): DiffChunk[] {
     const k = x - y
 
     const idxBase = max + 1
-    const prev_k =
-      k === -d || (k !== d && (prevSnap[k - 1 + idxBase] ?? -1) < (prevSnap[k + 1 + idxBase] ?? -1))
-        ? k + 1
-        : k - 1
+    const prev_k = k === -d || (k !== d && (prevSnap[k - 1 + idxBase] ?? -1) < (prevSnap[k + 1 + idxBase] ?? -1)) ? k + 1 : k - 1
 
     const prev_x = prevSnap[prev_k + idxBase]!
     const prev_y = prev_x - prev_k
@@ -176,11 +173,7 @@ export function textDiff(a: string, b: string): DiffChunk[] {
  * @param opts.toFile - Label for file (default "b")
  * @returns Unified diff string
  */
-export function unifiedDiff(
-  a: string,
-  b: string,
-  opts?: { context?: number; fromFile?: string; toFile?: string },
-): string {
+export function unifiedDiff(a: string, b: string, opts?: { context?: number; fromFile?: string; toFile?: string }): string {
   const context = opts?.context ?? 3
   const fromFile = opts?.fromFile ?? 'a'
   const toFile = opts?.toFile ?? 'b'
@@ -273,10 +266,7 @@ function isObject(val: unknown): val is Record<string, unknown> {
  * @param b - Modified object
  * @returns Array of ObjectDiffResult
  */
-export function objectDiff(
-  a: Record<string, unknown>,
-  b: Record<string, unknown>,
-): ObjectDiffResult[] {
+export function objectDiff(a: Record<string, unknown>, b: Record<string, unknown>): ObjectDiffResult[] {
   const results: ObjectDiffResult[] = []
 
   function walk(aVal: unknown, bVal: unknown, path: string): void {
@@ -305,21 +295,17 @@ export function objectDiff(
     }
 
     if (isObject(aVal) && isObject(bVal)) {
-      const aKeys = Object.keys(aVal).filter(
-        (k) => k !== '__proto__' && k !== 'constructor' && k !== 'prototype',
-      )
-      const bKeys = Object.keys(bVal).filter(
-        (k) => k !== '__proto__' && k !== 'constructor' && k !== 'prototype',
-      )
+      const aKeys = Object.keys(aVal).filter((k) => k !== '__proto__' && k !== 'constructor' && k !== 'prototype')
+      const bKeys = Object.keys(bVal).filter((k) => k !== '__proto__' && k !== 'constructor' && k !== 'prototype')
       const allKeys = [...new Set([...aKeys, ...bKeys])]
 
       for (const key of allKeys) {
         if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue
         const itemPath = path ? `${path}.${key}` : key
 
-        if (!Object.prototype.hasOwnProperty.call(aVal, key)) {
+        if (!Object.hasOwn(aVal, key)) {
           results.push({ path: itemPath, type: 'added', newValue: bVal[key] })
-        } else if (!Object.prototype.hasOwnProperty.call(bVal, key)) {
+        } else if (!Object.hasOwn(bVal, key)) {
           results.push({ path: itemPath, type: 'removed', oldValue: aVal[key] })
         } else {
           walk(aVal[key], bVal[key], itemPath)
@@ -376,10 +362,7 @@ function unsetAtPath(obj: Record<string, unknown>, path: string): void {
  * @param diffs - Array of ObjectDiffResult to apply
  * @returns A new object with all diffs applied
  */
-export function patch(
-  obj: Record<string, unknown>,
-  diffs: ObjectDiffResult[],
-): Record<string, unknown> {
+export function patch(obj: Record<string, unknown>, diffs: ObjectDiffResult[]): Record<string, unknown> {
   const result = deepClone(obj)
   for (const diff of diffs) {
     if (diff.type === 'added') {
