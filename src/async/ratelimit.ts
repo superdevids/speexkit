@@ -60,7 +60,7 @@ export class RateLimiter {
       const oldest = this._timestamps[0] ?? Date.now()
       const waitMs = oldest + this._perWindow - Date.now()
       if (waitMs > 0) {
-        await new Promise<void>(resolve => setTimeout(resolve, waitMs))
+        await new Promise<void>((resolve) => setTimeout(resolve, waitMs))
       }
     }
   }

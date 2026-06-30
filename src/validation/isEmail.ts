@@ -21,13 +21,7 @@ function isUnquotedLocalPart(local: string): boolean {
 
   for (let i = 0; i < local.length; i++) {
     const ch = local[i]!
-    if (
-      (ch >= 'a' && ch <= 'z') ||
-      (ch >= 'A' && ch <= 'Z') ||
-      (ch >= '0' && ch <= '9') ||
-      ch === '.' ||
-      LOCAL_SPECIAL.includes(ch)
-    ) {
+    if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch === '.' || LOCAL_SPECIAL.includes(ch)) {
       continue
     }
     return false
@@ -52,14 +46,7 @@ function isValidDomain(domain: string): boolean {
 
     for (let i = 0; i < label.length; i++) {
       const ch = label[i]!
-      if (
-        !(
-          (ch >= 'a' && ch <= 'z') ||
-          (ch >= 'A' && ch <= 'Z') ||
-          (ch >= '0' && ch <= '9') ||
-          ch === '-'
-        )
-      ) {
+      if (!((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch === '-')) {
         return false
       }
     }

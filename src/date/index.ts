@@ -17,29 +17,47 @@ export interface DateDiff {
   seconds: number
 }
 
-const MONTH_NAMES_SHORT = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-] as const
+const MONTH_NAMES_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const
 
 const MONTH_NAMES_FULL = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ] as const
 
 const MONTH_MAP: Record<string, number> = {
-  jan: 0, january: 0,
-  feb: 1, february: 1,
-  mar: 2, march: 2,
-  apr: 3, april: 3,
+  jan: 0,
+  january: 0,
+  feb: 1,
+  february: 1,
+  mar: 2,
+  march: 2,
+  apr: 3,
+  april: 3,
   may: 4,
-  jun: 5, june: 5,
-  jul: 6, july: 6,
-  aug: 7, august: 7,
-  sep: 8, september: 8,
-  oct: 9, october: 9,
-  nov: 10, november: 10,
-  dec: 11, december: 11,
+  jun: 5,
+  june: 5,
+  jul: 6,
+  july: 6,
+  aug: 7,
+  august: 7,
+  sep: 8,
+  september: 8,
+  oct: 9,
+  october: 9,
+  nov: 10,
+  november: 10,
+  dec: 11,
+  december: 11,
 }
 
 /**
@@ -100,13 +118,13 @@ export function formatDate(date: Date, format: string = 'YYYY-MM-DD'): string {
  */
 export function parseDate(input: string | number | Date): Date {
   if (input instanceof Date) {
-    if (isNaN(input.getTime())) throw new InvalidDateError(input)
+    if (Number.isNaN(input.getTime())) throw new InvalidDateError(input)
     return new Date(input.getTime())
   }
 
   if (typeof input === 'number') {
     const d = new Date(input)
-    if (isNaN(d.getTime())) throw new InvalidDateError(input)
+    if (Number.isNaN(d.getTime())) throw new InvalidDateError(input)
     return d
   }
 
@@ -122,20 +140,20 @@ export function parseDate(input: string | number | Date): Date {
       isoMatch[4] ? parseInt(isoMatch[4]!, 10) : 0,
       isoMatch[5] ? parseInt(isoMatch[5]!, 10) : 0,
       isoMatch[6] ? parseInt(isoMatch[6]!, 10) : 0,
-      isoMatch[7] ? parseInt(isoMatch[7]!.padEnd(3, '0'), 10) : 0
+      isoMatch[7] ? parseInt(isoMatch[7]!.padEnd(3, '0'), 10) : 0,
     )
-    if (!isNaN(d.getTime())) return d
+    if (!Number.isNaN(d.getTime())) return d
   }
 
   // DD/MM/YYYY or DD-MM-YYYY
-  const dmyMatch = trimmed.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/)
+  const dmyMatch = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/)
   if (dmyMatch) {
     const year = parseInt(dmyMatch[3]!, 10)
     const month = parseInt(dmyMatch[2]!, 10) - 1
     const day = parseInt(dmyMatch[1]!, 10)
     const d = new Date(year, month, day)
     // Validate that the date didn't overflow (e.g. Feb 29 in non-leap year)
-    if (!isNaN(d.getTime()) && d.getMonth() === month && d.getDate() === day) return d
+    if (!Number.isNaN(d.getTime()) && d.getMonth() === month && d.getDate() === day) return d
   }
 
   // DD MMM YYYY or DD MMMM YYYY
@@ -146,7 +164,7 @@ export function parseDate(input: string | number | Date): Date {
       const year = parseInt(textMatch[3]!, 10)
       const day = parseInt(textMatch[1]!, 10)
       const d = new Date(year, monthIndex, day)
-      if (!isNaN(d.getTime()) && d.getMonth() === monthIndex && d.getDate() === day) return d
+      if (!Number.isNaN(d.getTime()) && d.getMonth() === monthIndex && d.getDate() === day) return d
     }
   }
 
@@ -154,18 +172,18 @@ export function parseDate(input: string | number | Date): Date {
   const numMatch = trimmed.match(/^-?\d+$/)
   if (numMatch) {
     const d = new Date(parseInt(numMatch[0], 10))
-    if (!isNaN(d.getTime())) return d
+    if (!Number.isNaN(d.getTime())) return d
   }
 
   // Fallback: let Date.parse try
   const fallback = new Date(trimmed)
-  if (!isNaN(fallback.getTime())) return fallback
+  if (!Number.isNaN(fallback.getTime())) return fallback
 
   throw new InvalidDateError(input)
 }
 
 function isValidDate(d: Date): boolean {
-  return d instanceof Date && !isNaN(d.getTime())
+  return d instanceof Date && !Number.isNaN(d.getTime())
 }
 
 const MS_IN_SECOND = 1000
@@ -524,13 +542,28 @@ function formatRelativeTime(absDiffMs: number, suffix: string, locale: string): 
   let count: number
   let unit: keyof LocaleLabels
 
-  if (years >= 1) { count = years; unit = 'years' }
-  else if (months >= 1) { count = months; unit = 'months' }
-  else if (weeks >= 1) { count = weeks; unit = 'weeks' }
-  else if (days >= 1) { count = days; unit = 'days' }
-  else if (hours >= 1) { count = hours; unit = 'hours' }
-  else if (minutes >= 1) { count = minutes; unit = 'minutes' }
-  else { count = Math.max(1, seconds); unit = 'seconds' }
+  if (years >= 1) {
+    count = years
+    unit = 'years'
+  } else if (months >= 1) {
+    count = months
+    unit = 'months'
+  } else if (weeks >= 1) {
+    count = weeks
+    unit = 'weeks'
+  } else if (days >= 1) {
+    count = days
+    unit = 'days'
+  } else if (hours >= 1) {
+    count = hours
+    unit = 'hours'
+  } else if (minutes >= 1) {
+    count = minutes
+    unit = 'minutes'
+  } else {
+    count = Math.max(1, seconds)
+    unit = 'seconds'
+  }
 
   const label = count === 1 ? labels[unit].single : labels[unit].plural
   return `${count} ${label} ${suffix}`
@@ -662,11 +695,7 @@ export function formatInTimezone(date: Date, format: string, offsetHours: number
 export function isToday(date: Date): boolean {
   if (!isValidDate(date)) throw new InvalidDateError(date)
   const now = new Date()
-  return (
-    date.getFullYear() === now.getFullYear() &&
-    date.getMonth() === now.getMonth() &&
-    date.getDate() === now.getDate()
-  )
+  return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate()
 }
 
 /**
@@ -684,9 +713,7 @@ export function isYesterday(date: Date): boolean {
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
   return (
-    date.getFullYear() === yesterday.getFullYear() &&
-    date.getMonth() === yesterday.getMonth() &&
-    date.getDate() === yesterday.getDate()
+    date.getFullYear() === yesterday.getFullYear() && date.getMonth() === yesterday.getMonth() && date.getDate() === yesterday.getDate()
   )
 }
 
@@ -704,11 +731,7 @@ export function isTomorrow(date: Date): boolean {
   if (!isValidDate(date)) throw new InvalidDateError(date)
   const tomorrow = new Date()
   tomorrow.setDate(tomorrow.getDate() + 1)
-  return (
-    date.getFullYear() === tomorrow.getFullYear() &&
-    date.getMonth() === tomorrow.getMonth() &&
-    date.getDate() === tomorrow.getDate()
-  )
+  return date.getFullYear() === tomorrow.getFullYear() && date.getMonth() === tomorrow.getMonth() && date.getDate() === tomorrow.getDate()
 }
 
 /**
@@ -756,11 +779,7 @@ export function isSameDay(date1: Date, date2: Date): boolean {
   if (!isValidDate(date1) || !isValidDate(date2)) {
     throw new InvalidDateError('Invalid date provided to isSameDay')
   }
-  return (
-    date1.getFullYear() === date2.getFullYear() &&
-    date1.getMonth() === date2.getMonth() &&
-    date1.getDate() === date2.getDate()
-  )
+  return date1.getFullYear() === date2.getFullYear() && date1.getMonth() === date2.getMonth() && date1.getDate() === date2.getDate()
 }
 
 /**
@@ -813,7 +832,7 @@ export function weekOfYear(date: Date): number {
   const dayNum = d.getUTCDay() || 7
   d.setUTCDate(d.getUTCDate() + 4 - dayNum)
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
-  const weekNum = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7)
+  const weekNum = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
   return weekNum
 }
 
@@ -845,10 +864,12 @@ export function quarter(date: Date): number {
  */
 export function maxDate(dates: Date[]): Date {
   if (dates.length === 0) throw new Error('maxDate requires at least one date')
-  const ms = Math.max(...dates.map(d => {
-    if (!isValidDate(d)) throw new InvalidDateError(d)
-    return d.getTime()
-  }))
+  const ms = Math.max(
+    ...dates.map((d) => {
+      if (!isValidDate(d)) throw new InvalidDateError(d)
+      return d.getTime()
+    }),
+  )
   return new Date(ms)
 }
 
@@ -865,10 +886,12 @@ export function maxDate(dates: Date[]): Date {
  */
 export function minDate(dates: Date[]): Date {
   if (dates.length === 0) throw new Error('minDate requires at least one date')
-  const ms = Math.min(...dates.map(d => {
-    if (!isValidDate(d)) throw new InvalidDateError(d)
-    return d.getTime()
-  }))
+  const ms = Math.min(
+    ...dates.map((d) => {
+      if (!isValidDate(d)) throw new InvalidDateError(d)
+      return d.getTime()
+    }),
+  )
   return new Date(ms)
 }
 
@@ -904,7 +927,9 @@ function getLastWeekday(date: Date, targetDay: number): Date {
  * @example
  * nextMonday(new Date('2024-01-01')) // 2024-01-08 (Monday)
  */
-export function nextMonday(date: Date): Date { return getNextWeekday(date, 1) }
+export function nextMonday(date: Date): Date {
+  return getNextWeekday(date, 1)
+}
 
 /**
  * Returns the next Tuesday from the given date.
@@ -916,7 +941,9 @@ export function nextMonday(date: Date): Date { return getNextWeekday(date, 1) }
  * @example
  * nextTuesday(new Date('2024-01-01')) // 2024-01-02 (Tuesday)
  */
-export function nextTuesday(date: Date): Date { return getNextWeekday(date, 2) }
+export function nextTuesday(date: Date): Date {
+  return getNextWeekday(date, 2)
+}
 
 /**
  * Returns the next Wednesday from the given date.
@@ -925,7 +952,9 @@ export function nextTuesday(date: Date): Date { return getNextWeekday(date, 2) }
  * @returns The next Wednesday.
  * @throws {InvalidDateError} If the input date is invalid.
  */
-export function nextWednesday(date: Date): Date { return getNextWeekday(date, 3) }
+export function nextWednesday(date: Date): Date {
+  return getNextWeekday(date, 3)
+}
 
 /**
  * Returns the next Thursday from the given date.
@@ -934,7 +963,9 @@ export function nextWednesday(date: Date): Date { return getNextWeekday(date, 3)
  * @returns The next Thursday.
  * @throws {InvalidDateError} If the input date is invalid.
  */
-export function nextThursday(date: Date): Date { return getNextWeekday(date, 4) }
+export function nextThursday(date: Date): Date {
+  return getNextWeekday(date, 4)
+}
 
 /**
  * Returns the next Friday from the given date.
@@ -943,7 +974,9 @@ export function nextThursday(date: Date): Date { return getNextWeekday(date, 4) 
  * @returns The next Friday.
  * @throws {InvalidDateError} If the input date is invalid.
  */
-export function nextFriday(date: Date): Date { return getNextWeekday(date, 5) }
+export function nextFriday(date: Date): Date {
+  return getNextWeekday(date, 5)
+}
 
 /**
  * Returns the next Saturday from the given date.
@@ -952,7 +985,9 @@ export function nextFriday(date: Date): Date { return getNextWeekday(date, 5) }
  * @returns The next Saturday.
  * @throws {InvalidDateError} If the input date is invalid.
  */
-export function nextSaturday(date: Date): Date { return getNextWeekday(date, 6) }
+export function nextSaturday(date: Date): Date {
+  return getNextWeekday(date, 6)
+}
 
 /**
  * Returns the next Sunday from the given date.
@@ -961,7 +996,9 @@ export function nextSaturday(date: Date): Date { return getNextWeekday(date, 6) 
  * @returns The next Sunday.
  * @throws {InvalidDateError} If the input date is invalid.
  */
-export function nextSunday(date: Date): Date { return getNextWeekday(date, 0) }
+export function nextSunday(date: Date): Date {
+  return getNextWeekday(date, 0)
+}
 
 /**
  * Returns the last (previous) Monday from the given date.
@@ -973,7 +1010,9 @@ export function nextSunday(date: Date): Date { return getNextWeekday(date, 0) }
  * @example
  * lastMonday(new Date('2024-01-03')) // 2024-01-01 (Monday)
  */
-export function lastMonday(date: Date): Date { return getLastWeekday(date, 1) }
+export function lastMonday(date: Date): Date {
+  return getLastWeekday(date, 1)
+}
 
 /**
  * Returns the last (previous) Tuesday from the given date.
@@ -982,7 +1021,9 @@ export function lastMonday(date: Date): Date { return getLastWeekday(date, 1) }
  * @returns The last Tuesday.
  * @throws {InvalidDateError} If the input date is invalid.
  */
-export function lastTuesday(date: Date): Date { return getLastWeekday(date, 2) }
+export function lastTuesday(date: Date): Date {
+  return getLastWeekday(date, 2)
+}
 
 /**
  * Returns the last (previous) Wednesday from the given date.
@@ -991,7 +1032,9 @@ export function lastTuesday(date: Date): Date { return getLastWeekday(date, 2) }
  * @returns The last Wednesday.
  * @throws {InvalidDateError} If the input date is invalid.
  */
-export function lastWednesday(date: Date): Date { return getLastWeekday(date, 3) }
+export function lastWednesday(date: Date): Date {
+  return getLastWeekday(date, 3)
+}
 
 /**
  * Returns the last (previous) Thursday from the given date.
@@ -1000,7 +1043,9 @@ export function lastWednesday(date: Date): Date { return getLastWeekday(date, 3)
  * @returns The last Thursday.
  * @throws {InvalidDateError} If the input date is invalid.
  */
-export function lastThursday(date: Date): Date { return getLastWeekday(date, 4) }
+export function lastThursday(date: Date): Date {
+  return getLastWeekday(date, 4)
+}
 
 /**
  * Returns the last (previous) Friday from the given date.
@@ -1012,7 +1057,9 @@ export function lastThursday(date: Date): Date { return getLastWeekday(date, 4) 
  * @example
  * lastFriday(new Date('2024-01-03')) // 2023-12-29 (Friday)
  */
-export function lastFriday(date: Date): Date { return getLastWeekday(date, 5) }
+export function lastFriday(date: Date): Date {
+  return getLastWeekday(date, 5)
+}
 
 /**
  * Returns the last (previous) Saturday from the given date.
@@ -1021,7 +1068,9 @@ export function lastFriday(date: Date): Date { return getLastWeekday(date, 5) }
  * @returns The last Saturday.
  * @throws {InvalidDateError} If the input date is invalid.
  */
-export function lastSaturday(date: Date): Date { return getLastWeekday(date, 6) }
+export function lastSaturday(date: Date): Date {
+  return getLastWeekday(date, 6)
+}
 
 /**
  * Returns the last (previous) Sunday from the given date.
@@ -1030,7 +1079,9 @@ export function lastSaturday(date: Date): Date { return getLastWeekday(date, 6) 
  * @returns The last Sunday.
  * @throws {InvalidDateError} If the input date is invalid.
  */
-export function lastSunday(date: Date): Date { return getLastWeekday(date, 0) }
+export function lastSunday(date: Date): Date {
+  return getLastWeekday(date, 0)
+}
 
 // â”€â”€â”€ Duration Parsing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -1055,29 +1106,84 @@ export function lastSunday(date: Date): Date { return getLastWeekday(date, 0) }
 export function parseDuration(input: string): number {
   const regex = /(\d+)\s*([wdhms])/g
   let ms = 0
-  let match: RegExpExecArray | null
-  while ((match = regex.exec(input)) !== null) {
+  let match: RegExpExecArray | null = regex.exec(input)
+  while (match !== null) {
     const val = parseInt(match[1]!, 10)
     switch (match[2]) {
-      case 'w': ms += val * 7 * MS_IN_DAY; break
-      case 'd': ms += val * MS_IN_DAY; break
-      case 'h': ms += val * MS_IN_HOUR; break
-      case 'm': ms += val * MS_IN_MINUTE; break
-      case 's': ms += val * MS_IN_SECOND; break
+      case 'w':
+        ms += val * 7 * MS_IN_DAY
+        break
+      case 'd':
+        ms += val * MS_IN_DAY
+        break
+      case 'h':
+        ms += val * MS_IN_HOUR
+        break
+      case 'm':
+        ms += val * MS_IN_MINUTE
+        break
+      case 's':
+        ms += val * MS_IN_SECOND
+        break
     }
+    match = regex.exec(input)
   }
   return ms
 }
 
-export function addHours(date:Date,hours:number):Date{if(!isValidDate(date))throw new InvalidDateError(date);const r=new Date(date.getTime());r.setHours(r.getHours()+hours);return r}
-export function addMinutes(date:Date,minutes:number):Date{if(!isValidDate(date))throw new InvalidDateError(date);const r=new Date(date.getTime());r.setMinutes(r.getMinutes()+minutes);return r}
-export function addSeconds(date:Date,seconds:number):Date{if(!isValidDate(date))throw new InvalidDateError(date);const r=new Date(date.getTime());r.setSeconds(r.getSeconds()+seconds);return r}
-export function subDays(date:Date,days:number):Date{return addDays(date,-days)}
-export function subMonths(date:Date,months:number):Date{return addMonths(date,-months)}
-export function subYears(date:Date,years:number):Date{return addYears(date,-years)}
-export function isEqual(date1:Date,date2:Date):boolean{if(!isValidDate(date1)||!isValidDate(date2))throw new InvalidDateError("isEqual");return date1.getTime()===date2.getTime()}
-export function unix(date:Date):number{if(!isValidDate(date))throw new InvalidDateError(date);return Math.floor(date.getTime()/1000)}
-export function fromUnix(timestamp:number):Date{return new Date(timestamp*1000)}
-export function startOfWeek(date:Date,options?:{weekStartsOn?:number}):Date{if(!isValidDate(date))throw new InvalidDateError(date);const ws=options?.weekStartsOn??0;const d=date.getDay();const diff=(d-ws+7)%7;const r=new Date(date.getTime());r.setDate(r.getDate()-diff);return startOfDay(r)}
-export function endOfWeek(date:Date,options?:{weekStartsOn?:number}):Date{if(!isValidDate(date))throw new InvalidDateError(date);const ws=options?.weekStartsOn??0;const d=date.getDay();const diff=(ws-d+6)%7;const r=new Date(date.getTime());r.setDate(r.getDate()+diff);return endOfDay(r)}
-
+export function addHours(date: Date, hours: number): Date {
+  if (!isValidDate(date)) throw new InvalidDateError(date)
+  const r = new Date(date.getTime())
+  r.setHours(r.getHours() + hours)
+  return r
+}
+export function addMinutes(date: Date, minutes: number): Date {
+  if (!isValidDate(date)) throw new InvalidDateError(date)
+  const r = new Date(date.getTime())
+  r.setMinutes(r.getMinutes() + minutes)
+  return r
+}
+export function addSeconds(date: Date, seconds: number): Date {
+  if (!isValidDate(date)) throw new InvalidDateError(date)
+  const r = new Date(date.getTime())
+  r.setSeconds(r.getSeconds() + seconds)
+  return r
+}
+export function subDays(date: Date, days: number): Date {
+  return addDays(date, -days)
+}
+export function subMonths(date: Date, months: number): Date {
+  return addMonths(date, -months)
+}
+export function subYears(date: Date, years: number): Date {
+  return addYears(date, -years)
+}
+export function isEqual(date1: Date, date2: Date): boolean {
+  if (!isValidDate(date1) || !isValidDate(date2)) throw new InvalidDateError('isEqual')
+  return date1.getTime() === date2.getTime()
+}
+export function unix(date: Date): number {
+  if (!isValidDate(date)) throw new InvalidDateError(date)
+  return Math.floor(date.getTime() / 1000)
+}
+export function fromUnix(timestamp: number): Date {
+  return new Date(timestamp * 1000)
+}
+export function startOfWeek(date: Date, options?: { weekStartsOn?: number }): Date {
+  if (!isValidDate(date)) throw new InvalidDateError(date)
+  const ws = options?.weekStartsOn ?? 0
+  const d = date.getDay()
+  const diff = (d - ws + 7) % 7
+  const r = new Date(date.getTime())
+  r.setDate(r.getDate() - diff)
+  return startOfDay(r)
+}
+export function endOfWeek(date: Date, options?: { weekStartsOn?: number }): Date {
+  if (!isValidDate(date)) throw new InvalidDateError(date)
+  const ws = options?.weekStartsOn ?? 0
+  const d = date.getDay()
+  const diff = (ws - d + 6) % 7
+  const r = new Date(date.getTime())
+  r.setDate(r.getDate() + diff)
+  return endOfDay(r)
+}

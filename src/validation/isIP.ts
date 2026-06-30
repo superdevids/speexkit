@@ -5,7 +5,7 @@ export function isIPv4(value: string): boolean {
   if (typeof value !== 'string' || value.length === 0) return false
   const parts = value.split('.')
   if (parts.length !== 4) return false
-  return parts.every(part => {
+  return parts.every((part) => {
     if (part.length === 0 || part.length > 3) return false
     if (part !== '0' && part.startsWith('0')) return false
     const num = Number(part)
@@ -25,7 +25,7 @@ export function isIPv6(value: string): boolean {
   if (!hasDoubleColon) {
     const groups = value.split(':')
     if (groups.length !== 8) return false
-    return groups.every(g => /^[0-9a-fA-F]{1,4}$/.test(g))
+    return groups.every((g) => /^[0-9a-fA-F]{1,4}$/.test(g))
   }
   const parts = value.split('::')
   if (parts.length > 2) return false
@@ -34,7 +34,7 @@ export function isIPv6(value: string): boolean {
   if (left.length + right.length > 7) return false
   const middle = 8 - left.length - right.length
   const all = [...left, ...Array(middle).fill('0'), ...right]
-  return all.every(g => /^[0-9a-fA-F]{1,4}$/.test(g))
+  return all.every((g) => /^[0-9a-fA-F]{1,4}$/.test(g))
 }
 /** Is I P. */
 export function isIP(value: string, version?: 4 | 6): boolean {

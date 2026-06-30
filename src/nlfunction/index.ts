@@ -4,12 +4,7 @@
  * Re-exports matching functions from core and adds FP-flavored utilities.
  */
 
-import {
-  debounce as _debounceCore,
-  throttle as _throttleCore,
-  once as _onceCore,
-  identity as _identityCore,
-} from '../core/index.js'
+import { debounce as _debounceCore, identity as _identityCore, once as _onceCore, throttle as _throttleCore } from '../core/index.js'
 
 // ─── Re-exports from core ──────────────────────────────────
 
@@ -24,11 +19,7 @@ import {
  *
  * @example const f = debounce(() => save(), 300)
  */
-export function debounce<T extends (...args: any[]) => any>(
-  fn: T,
-  wait: number,
-  leading?: boolean
-): (...args: Parameters<T>) => void {
+export function debounce<T extends (...args: any[]) => any>(fn: T, wait: number, leading?: boolean): (...args: Parameters<T>) => void {
   return _debounceCore(fn as (...args: unknown[]) => unknown, wait, { leading, trailing: true }) as (...args: Parameters<T>) => void
 }
 
@@ -42,10 +33,7 @@ export function debounce<T extends (...args: any[]) => any>(
  *
  * @example const f = throttle(() => handleScroll(), 100)
  */
-export function throttle<T extends (...args: any[]) => any>(
-  fn: T,
-  wait: number
-): (...args: Parameters<T>) => void {
+export function throttle<T extends (...args: any[]) => any>(fn: T, wait: number): (...args: Parameters<T>) => void {
   return _throttleCore(fn as (...args: unknown[]) => unknown, wait) as (...args: Parameters<T>) => void
 }
 
@@ -58,9 +46,7 @@ export function throttle<T extends (...args: any[]) => any>(
  *
  * @example const initialize = once(() => createConnection())
  */
-export function once<T extends (...args: any[]) => any>(
-  fn: T
-): (...args: Parameters<T>) => ReturnType<T> {
+export function once<T extends (...args: any[]) => any>(fn: T): (...args: Parameters<T>) => ReturnType<T> {
   return _onceCore(fn as (...args: unknown[]) => unknown) as (...args: Parameters<T>) => ReturnType<T>
 }
 
@@ -91,10 +77,7 @@ export function id<T>(value: T): T {
  *          add(1)(2) // 3
  *          add(1, 2) // 3
  */
-export function curry<T extends (...args: any[]) => any>(
-  fn: T,
-  arity?: number
-): (...args: any[]) => any {
+export function curry<T extends (...args: any[]) => any>(fn: T, arity?: number): (...args: any[]) => any {
   const expectedArity = arity ?? fn.length
 
   function curried(this: unknown, ...args: any[]): any {
@@ -120,10 +103,7 @@ export function curry<T extends (...args: any[]) => any>(
  *          const add5 = partial(add, 5)
  *          add5(3) // 8
  */
-export function partial<T extends (...args: any[]) => any>(
-  fn: T,
-  ...presetArgs: any[]
-): (...args: any[]) => any {
+export function partial<T extends (...args: any[]) => any>(fn: T, ...presetArgs: any[]): (...args: any[]) => any {
   return function (this: unknown, ...moreArgs: any[]) {
     return fn.apply(this, [...presetArgs, ...moreArgs])
   }
@@ -140,10 +120,7 @@ export function partial<T extends (...args: any[]) => any>(
  *          const divideBy2 = partialRight(divide, 2)
  *          divideBy2(10) // 5  — same as divide(10, 2)
  */
-export function partialRight<T extends (...args: any[]) => any>(
-  fn: T,
-  ...presetArgs: any[]
-): (...args: any[]) => any {
+export function partialRight<T extends (...args: any[]) => any>(fn: T, ...presetArgs: any[]): (...args: any[]) => any {
   return function (this: unknown, ...moreArgs: any[]) {
     return fn.apply(this, [...moreArgs, ...presetArgs])
   }
@@ -202,7 +179,7 @@ export function trace<T>(message?: string): (value: T) => T {
 export function memoizeSync<T extends (...args: any[]) => any>(
   fn: T,
   resolver?: (...args: Parameters<T>) => string,
-  maxSize: number = 100
+  maxSize: number = 100,
 ): T & { cache: Map<string, ReturnType<T>> } {
   const cache = new Map<string, ReturnType<T>>()
 
@@ -238,9 +215,7 @@ export function memoizeSync<T extends (...args: any[]) => any>(
  *          const isOdd = negate(isEven)
  *          isOdd(3) // true
  */
-export function negate<T extends (...args: any[]) => boolean>(
-  predicate: T
-): (...args: Parameters<T>) => boolean {
+export function negate<T extends (...args: any[]) => boolean>(predicate: T): (...args: Parameters<T>) => boolean {
   return function (this: unknown, ...args: Parameters<T>): boolean {
     return !predicate.apply(this, args)
   }
@@ -261,10 +236,7 @@ export function negate<T extends (...args: any[]) => boolean>(
  *          canCallTwice() // 'hello'
  *          canCallTwice() // undefined
  */
-export function before<T extends (...args: any[]) => any>(
-  n: number,
-  fn: T
-): (...args: Parameters<T>) => ReturnType<T> | undefined {
+export function before<T extends (...args: any[]) => any>(n: number, fn: T): (...args: Parameters<T>) => ReturnType<T> | undefined {
   let count = 0
   let result: ReturnType<T>
 
@@ -319,11 +291,9 @@ export function constant<T>(value: T): (...args: any[]) => T {
  * @example const fns = over([Math.min, Math.max])
  *          fns(1, 2, 3) // [1, 3]
  */
-export function over<T, R>(
-  fns: Array<(...args: T[]) => R>
-): (...args: T[]) => R[] {
+export function over<T, R>(fns: Array<(...args: T[]) => R>): (...args: T[]) => R[] {
   return function (this: unknown, ...args: T[]): R[] {
-    return fns.map(fn => fn.apply(this, args))
+    return fns.map((fn) => fn.apply(this, args))
   }
 }
 
@@ -348,9 +318,7 @@ export function apply<T, R>(fn: (value: T) => R): (value: T) => R {
  * @example const byAge = comparing((p: Person) => p.age)
  *          people.sort(byAge)
  */
-export function comparing<T>(
-  fn: (value: T) => number | string
-): (a: T, b: T) => number {
+export function comparing<T>(fn: (value: T) => number | string): (a: T, b: T) => number {
   return (a: T, b: T): number => {
     const va = fn(a)
     const vb = fn(b)
@@ -373,9 +341,7 @@ export function comparing<T>(
  *          f(3) // 6 — recomputed
  *          f(2) // 4 — recomputed (last was with 3)
  */
-export function memoizeLast<T extends (...args: any[]) => any>(
-  fn: T
-): (...args: Parameters<T>) => ReturnType<T> {
+export function memoizeLast<T extends (...args: any[]) => any>(fn: T): (...args: Parameters<T>) => ReturnType<T> {
   let lastKey: string | null = null
   let lastResult: ReturnType<T>
 
@@ -390,14 +356,72 @@ export function memoizeLast<T extends (...args: any[]) => any>(
   }
 }
 
-export function flow<T>(...fns:Array<(arg:T)=>T>):(initial:T)=>T{return(initial:T):T=>fns.reduce((acc,fn)=>fn(acc),initial)}
-export function tryCatch<T extends(...args:any[])=>any,R>(fn:T,fallback:R):(...args:Parameters<T>)=>R{return function(this:any,...args:any[]){try{return fn.apply(this,args)}catch{return fallback}}}
-export function attempt<T>(fn:()=>T):T|Error{try{return fn()}catch(e){return e instanceof Error?e:new Error(String(e))}}
-export function property<T=unknown>(path:string):(obj:unknown)=>T|undefined{return(obj:unknown):T|undefined=>{if(obj==null)return undefined;const keys=path.split('.');let current:any=obj;for(const key of keys){if(current==null||typeof current!=='object')return undefined;current=current[key]}return current as T}}
-export function converge<R>(converger:(...args:any[])=>R,branches:Array<(...args:any[])=>any>):(...args:any[])=>R{return function(this:any,...args:any[]){return converger.apply(this,branches.map(b=>b.apply(this,args)))}}
-export function flip<T,U,R>(fn:(a:T,b:U)=>R):(b:U,a:T)=>R{return(b:U,a:T):R=>fn(a,b)}
-export function after<T extends(...args:any[])=>any>(n:number,fn:T):(...args:Parameters<T>)=>ReturnType<T>|undefined{let c=0;return function(this:any,...args:any[]){c++;if(c>=n)return fn.apply(this,args);return undefined}}
-export function ifElse<T,R>(predicate:(value:T)=>boolean,onTrue:(value:T)=>R,onFalse:(value:T)=>R):(value:T)=>R{return(v:T):R=>predicate(v)?onTrue(v):onFalse(v)}
-export function when<T>(predicate:(value:T)=>boolean,fn:(value:T)=>T):(value:T)=>T{return(v:T):T=>predicate(v)?fn(v):v}
-export function unless<T>(predicate:(value:T)=>boolean,fn:(value:T)=>T):(value:T)=>T{return(v:T):T=>predicate(v)?v:fn(v)}
-export function curryRight<T extends(...args:any[])=>any>(fn:T,arity?:number):(...args:any[])=>any{const a=arity??fn.length;function c(this:any,...args:any[]):any{if(args.length>=a)return fn.apply(this,args);return function(this:any,...m:any[]){return c.apply(this,[...m,...args])}}return c}
+export function flow<T>(...fns: Array<(arg: T) => T>): (initial: T) => T {
+  return (initial: T): T => fns.reduce((acc, fn) => fn(acc), initial)
+}
+export function tryCatch<T extends (...args: any[]) => any, R>(fn: T, fallback: R): (...args: Parameters<T>) => R {
+  return function (this: any, ...args: any[]) {
+    try {
+      return fn.apply(this, args)
+    } catch {
+      return fallback
+    }
+  }
+}
+export function attempt<T>(fn: () => T): T | Error {
+  try {
+    return fn()
+  } catch (e) {
+    return e instanceof Error ? e : new Error(String(e))
+  }
+}
+export function property<T = unknown>(path: string): (obj: unknown) => T | undefined {
+  return (obj: unknown): T | undefined => {
+    if (obj == null) return undefined
+    const keys = path.split('.')
+    let current: any = obj
+    for (const key of keys) {
+      if (current == null || typeof current !== 'object') return undefined
+      current = current[key]
+    }
+    return current as T
+  }
+}
+export function converge<R>(converger: (...args: any[]) => R, branches: Array<(...args: any[]) => any>): (...args: any[]) => R {
+  return function (this: any, ...args: any[]) {
+    return converger.apply(
+      this,
+      branches.map((b) => b.apply(this, args)),
+    )
+  }
+}
+export function flip<T, U, R>(fn: (a: T, b: U) => R): (b: U, a: T) => R {
+  return (b: U, a: T): R => fn(a, b)
+}
+export function after<T extends (...args: any[]) => any>(n: number, fn: T): (...args: Parameters<T>) => ReturnType<T> | undefined {
+  let c = 0
+  return function (this: any, ...args: any[]) {
+    c++
+    if (c >= n) return fn.apply(this, args)
+    return undefined
+  }
+}
+export function ifElse<T, R>(predicate: (value: T) => boolean, onTrue: (value: T) => R, onFalse: (value: T) => R): (value: T) => R {
+  return (v: T): R => (predicate(v) ? onTrue(v) : onFalse(v))
+}
+export function when<T>(predicate: (value: T) => boolean, fn: (value: T) => T): (value: T) => T {
+  return (v: T): T => (predicate(v) ? fn(v) : v)
+}
+export function unless<T>(predicate: (value: T) => boolean, fn: (value: T) => T): (value: T) => T {
+  return (v: T): T => (predicate(v) ? v : fn(v))
+}
+export function curryRight<T extends (...args: any[]) => any>(fn: T, arity?: number): (...args: any[]) => any {
+  const a = arity ?? fn.length
+  function c(this: any, ...args: any[]): any {
+    if (args.length >= a) return fn.apply(this, args)
+    return function (this: any, ...m: any[]) {
+      return c.apply(this, [...m, ...args])
+    }
+  }
+  return c
+}

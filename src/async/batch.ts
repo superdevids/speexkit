@@ -8,11 +8,7 @@
  * })
  * // results = [2, 4, 6, 8, 10]
  */
-export async function batch<T, R>(
-  items: T[],
-  batchSize: number,
-  fn: (batch: T[]) => Promise<R[]>,
-): Promise<R[]> {
+export async function batch<T, R>(items: T[], batchSize: number, fn: (batch: T[]) => Promise<R[]>): Promise<R[]> {
   if (batchSize < 1) throw new RangeError('batchSize must be >= 1')
 
   const results: R[] = []

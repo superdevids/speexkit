@@ -3,7 +3,7 @@ const IPV4_OCTET = /^(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
 function isValidIPv4(hostname: string): boolean {
   const octets = hostname.split('.')
   if (octets.length !== 4) return false
-  return octets.every(octet => IPV4_OCTET.test(octet))
+  return octets.every((octet) => IPV4_OCTET.test(octet))
 }
 
 function isValidDNSHostname(hostname: string): boolean {
@@ -18,14 +18,7 @@ function isValidDNSHostname(hostname: string): boolean {
 
     for (let i = 0; i < label.length; i++) {
       const ch = label[i]!
-      if (
-        !(
-          (ch >= 'a' && ch <= 'z') ||
-          (ch >= 'A' && ch <= 'Z') ||
-          (ch >= '0' && ch <= '9') ||
-          ch === '-'
-        )
-      ) {
+      if (!((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch === '-')) {
         return false
       }
     }

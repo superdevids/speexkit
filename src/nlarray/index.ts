@@ -84,9 +84,7 @@ function broadcastShapes(...shapes: number[][]): number[] {
       if (result[idx] === 1) {
         result[idx] = dim
       } else if (result[idx] !== dim) {
-        throw new Error(
-          `Shapes cannot be broadcast together: [${shapes.map((s) => `[${s}]`).join(', ')}]`,
-        )
+        throw new Error(`Shapes cannot be broadcast together: [${shapes.map((s) => `[${s}]`).join(', ')}]`)
       }
     }
   }
@@ -214,9 +212,7 @@ export class NDArray<T = number> {
 
       for (let i = 1; i < numRows; i++) {
         if (rows[i]!.length !== numCols) {
-          throw new Error(
-            `Inconsistent row lengths: row 0 has ${numCols}, row ${i} has ${rows[i]!.length}`,
-          )
+          throw new Error(`Inconsistent row lengths: row 0 has ${numCols}, row ${i} has ${rows[i]!.length}`)
         }
       }
 
@@ -245,9 +241,7 @@ export class NDArray<T = number> {
   private _validateShape(): void {
     const expected = shapeSize(this._shape)
     if (expected !== this._data.length) {
-      throw new Error(
-        `Shape [${this._shape}] has ${expected} elements but data has ${this._data.length} elements`,
-      )
+      throw new Error(`Shape [${this._shape}] has ${expected} elements but data has ${this._data.length} elements`)
     }
   }
 
@@ -255,9 +249,7 @@ export class NDArray<T = number> {
   private _normalizeAxis(axis: number): number {
     if (axis < 0) axis = this._shape.length + axis
     if (axis < 0 || axis >= this._shape.length) {
-      throw new Error(
-        `Axis ${axis} is out of bounds for array of dimension ${this._shape.length}`,
-      )
+      throw new Error(`Axis ${axis} is out of bounds for array of dimension ${this._shape.length}`)
     }
     return axis
   }
@@ -431,7 +423,7 @@ export class NDArray<T = number> {
         result.push(parseFloat((actualStart + i * step).toFixed(10)))
       }
     } else {
-      const n = Math.max(0, Math.ceil((actualStart - actualStop) / (-step)))
+      const n = Math.max(0, Math.ceil((actualStart - actualStop) / -step))
       for (let i = 0; i < n; i++) {
         result.push(parseFloat((actualStart + i * step).toFixed(10)))
       }
@@ -646,7 +638,7 @@ export class NDArray<T = number> {
    * @returns New NDArray with elements raised to `exp`.
    */
   pow(exp: number): NDArray<number> {
-    return this._unaryNumOp((a) => Math.pow(a, exp))
+    return this._unaryNumOp((a) => a ** exp)
   }
 
   /**
@@ -699,7 +691,7 @@ export class NDArray<T = number> {
    * @returns New NDArray with rounded values.
    */
   round(decimals: number = 0): NDArray<number> {
-    const factor = Math.pow(10, decimals)
+    const factor = 10 ** decimals
     return this._unaryNumOp((a) => {
       const shifted = Number((a * factor).toPrecision(15))
       return Math.round(shifted) / factor
@@ -734,10 +726,7 @@ export class NDArray<T = number> {
   }
 
   /** @internal Apply a binary numeric operation (scalar or NDArray with broadcasting). */
-  private _binaryNumOp(
-    op: (a: number, b: number) => number,
-    other: number | NDArray,
-  ): NDArray<number> {
+  private _binaryNumOp(op: (a: number, b: number) => number, other: number | NDArray): NDArray<number> {
     if (typeof other === 'number') {
       // Scalar case
       const result = new Array<number>(this._data.length)
@@ -1003,10 +992,7 @@ export class NDArray<T = number> {
    * @internal Reduce along an axis using a reducer function.
    * Returns a lower-dimensional NDArray (never a scalar — callers check for scalar case).
    */
-  private _reduceAxis(
-    axis: number,
-    reducer: (values: number[]) => number,
-  ): NDArray<number> {
+  private _reduceAxis(axis: number, reducer: (values: number[]) => number): NDArray<number> {
     axis = this._normalizeAxis(axis)
 
     const resultShape = [...this._shape]
@@ -1085,14 +1071,11 @@ export class NDArray<T = number> {
     if (this.ndim === 1 && other.ndim === 1) {
       // Inner product
       if (this._data.length !== other._data.length) {
-        throw new Error(
-          `Incompatible shapes for dot product: [${this._shape}] and [${other._shape}]`,
-        )
+        throw new Error(`Incompatible shapes for dot product: [${this._shape}] and [${other._shape}]`)
       }
       let total = 0
       for (let i = 0; i < this._data.length; i++) {
-        total +=
-          (this._data[i] as unknown as number) * (other._data[i] as unknown as number)
+        total += (this._data[i] as unknown as number) * (other._data[i] as unknown as number)
       }
       return total
     }
@@ -1104,18 +1087,14 @@ export class NDArray<T = number> {
     if (this.ndim === 2 && other.ndim === 1) {
       // Matrix-vector: [m, n] @ [n] → [m]
       if (this._shape[1] !== other._data.length) {
-        throw new Error(
-          `Incompatible shapes for matrix-vector product: [${this._shape}] and [${other._shape}]`,
-        )
+        throw new Error(`Incompatible shapes for matrix-vector product: [${this._shape}] and [${other._shape}]`)
       }
       const [m, n] = this._shape as [number, number]
       const result = new Array<number>(m)
       for (let i = 0; i < m; i++) {
         let sum = 0
         for (let k = 0; k < n; k++) {
-          sum +=
-            (this._data[i * n + k] as unknown as number) *
-            (other._data[k] as unknown as number)
+          sum += (this._data[i * n + k] as unknown as number) * (other._data[k] as unknown as number)
         }
         result[i] = sum
       }
@@ -1125,9 +1104,7 @@ export class NDArray<T = number> {
     if (this.ndim === 1 && other.ndim === 2) {
       // Vector-matrix: [n] @ [n, p] → [p]
       if (this._data.length !== other._shape[0]) {
-        throw new Error(
-          `Incompatible shapes for vector-matrix product: [${this._shape}] and [${other._shape}]`,
-        )
+        throw new Error(`Incompatible shapes for vector-matrix product: [${this._shape}] and [${other._shape}]`)
       }
       const n = this._data.length
       const p = other._shape[1]!
@@ -1135,18 +1112,14 @@ export class NDArray<T = number> {
       for (let j = 0; j < p; j++) {
         let sum = 0
         for (let k = 0; k < n; k++) {
-          sum +=
-            (this._data[k] as unknown as number) *
-            (other._data[k * p + j] as unknown as number)
+          sum += (this._data[k] as unknown as number) * (other._data[k * p + j] as unknown as number)
         }
         result[j] = sum
       }
       return new NDArray<number>(result, [p])
     }
 
-    throw new Error(
-      `dot product not implemented for ${this.ndim}-D and ${other.ndim}-D arrays`,
-    )
+    throw new Error(`dot product not implemented for ${this.ndim}-D and ${other.ndim}-D arrays`)
   }
 
   /**
@@ -1173,9 +1146,7 @@ export class NDArray<T = number> {
       const bCols = bShape[bShape.length - 1]!
 
       if (aCols !== bRows) {
-        throw new Error(
-          `Incompatible shapes for matmul: [${aShape}] and [${bShape}]`,
-        )
+        throw new Error(`Incompatible shapes for matmul: [${aShape}] and [${bShape}]`)
       }
 
       // Batch dims only (last two are matrix dims)
@@ -1216,7 +1187,7 @@ export class NDArray<T = number> {
               const bv = other._data[bBase + k * bCols + j] as unknown as number
               sum += av * bv
             }
-            const flatIdx = (bi * aRows * bCols) + (i * bCols) + j
+            const flatIdx = bi * aRows * bCols + i * bCols + j
             result[flatIdx] = sum
           }
         }
@@ -1247,9 +1218,7 @@ export class NDArray<T = number> {
     const [n2, p] = other._shape as [number, number]
 
     if (n !== n2) {
-      throw new Error(
-        `Incompatible shapes for matrix multiplication: [${this._shape}] × [${other._shape}]`,
-      )
+      throw new Error(`Incompatible shapes for matrix multiplication: [${this._shape}] × [${other._shape}]`)
     }
 
     const result = new Array<number>(m * p)
@@ -1257,9 +1226,7 @@ export class NDArray<T = number> {
       for (let j = 0; j < p; j++) {
         let sum = 0
         for (let k = 0; k < n; k++) {
-          sum +=
-            (this._data[i * n + k] as unknown as number) *
-            (other._data[k * p + j] as unknown as number)
+          sum += (this._data[i * n + k] as unknown as number) * (other._data[k * p + j] as unknown as number)
         }
         result[i * p + j] = sum
       }
@@ -1388,9 +1355,7 @@ export class NDArray<T = number> {
       actualEnd[i] = e >= 0 ? e : ((e % this._shape[i]!) + this._shape[i]!) % this._shape[i]!
 
       if (actualEnd[i]! <= actualStart[i]!) {
-        throw new Error(
-          `Invalid slice for dimension ${i}: start ${actualStart[i]} > end ${actualEnd[i]}`,
-        )
+        throw new Error(`Invalid slice for dimension ${i}: start ${actualStart[i]} > end ${actualEnd[i]}`)
       }
     }
 
@@ -1506,12 +1471,7 @@ export class NDArray<T = number> {
   }
 
   /** @internal Recursively build nested arrays from flat storage. */
-  private _buildNested(
-    data: T[],
-    shape: number[],
-    strides: number[],
-    offset: number,
-  ): T | T[] | unknown[] {
+  private _buildNested(data: T[], shape: number[], strides: number[], offset: number): T | T[] | unknown[] {
     if (shape.length === 0) {
       return data[offset]!
     }
@@ -1561,11 +1521,7 @@ export class NDArray<T = number> {
     const pad = ' '.repeat(indent + 1)
 
     for (let i = 0; i < shape[0]!; i++) {
-      const inner = this._formatArray(
-        data.slice(i * innerSize),
-        shape.slice(1),
-        indent + 1,
-      )
+      const inner = this._formatArray(data.slice(i * innerSize), shape.slice(1), indent + 1)
       parts.push(inner)
     }
 
@@ -1617,13 +1573,9 @@ export class NDArray<T = number> {
    */
   get(...indices: number[]): T {
     if (indices.length !== this._shape.length) {
-      throw new Error(
-        `Expected ${this._shape.length} indices, got ${indices.length}`,
-      )
+      throw new Error(`Expected ${this._shape.length} indices, got ${indices.length}`)
     }
-    const normIndices = indices.map((idx, i) =>
-      ((idx % this._shape[i]!) + this._shape[i]!) % this._shape[i]!,
-    )
+    const normIndices = indices.map((idx, i) => ((idx % this._shape[i]!) + this._shape[i]!) % this._shape[i]!)
     const flatIdx = ravelIndex(normIndices, this._strides)
     return this._data[flatIdx]!
   }
@@ -1642,13 +1594,9 @@ export class NDArray<T = number> {
    */
   set(value: T, ...indices: number[]): void {
     if (indices.length !== this._shape.length) {
-      throw new Error(
-        `Expected ${this._shape.length} indices, got ${indices.length}`,
-      )
+      throw new Error(`Expected ${this._shape.length} indices, got ${indices.length}`)
     }
-    const normIndices = indices.map((idx, i) =>
-      ((idx % this._shape[i]!) + this._shape[i]!) % this._shape[i]!,
-    )
+    const normIndices = indices.map((idx, i) => ((idx % this._shape[i]!) + this._shape[i]!) % this._shape[i]!)
     const flatIdx = ravelIndex(normIndices, this._strides)
     this._data[flatIdx] = value
   }
@@ -1812,10 +1760,7 @@ export class NDArray<T = number> {
       }
       for (let d = 0; d < ndim; d++) {
         if (shape[d] !== firstShape[d]) {
-          throw new Error(
-            `Incompatible shapes for concatenation along axis ${axis}: ` +
-              `[${firstShape}] and [${shape}]`,
-          )
+          throw new Error(`Incompatible shapes for concatenation along axis ${axis}: ` + `[${firstShape}] and [${shape}]`)
         }
       }
     }
@@ -1850,10 +1795,7 @@ export class NDArray<T = number> {
       const srcOffset = offsets[srcIdx]!
       const srcIndices = [...indices]
       srcIndices[axis] = axisValue - srcOffset
-      const srcFlatIdx = ravelIndex(
-        srcIndices,
-        computeStrides(srcArr.shape),
-      )
+      const srcFlatIdx = ravelIndex(srcIndices, computeStrides(srcArr.shape))
       result[ri] = srcArr._data[srcFlatIdx] as number
     }
 
@@ -1884,13 +1826,8 @@ export class NDArray<T = number> {
         // Fast shape check
         const s1 = arrays[i]!.shape
         const s2 = firstShape
-        if (
-          s1.length !== s2.length ||
-          s1.some((d, j) => d !== s2[j])
-        ) {
-          throw new Error(
-            `All arrays must have the same shape for stack, got [${s1}] and [${s2}]`,
-          )
+        if (s1.length !== s2.length || s1.some((d, j) => d !== s2[j])) {
+          throw new Error(`All arrays must have the same shape for stack, got [${s1}] and [${s2}]`)
         }
       }
     }

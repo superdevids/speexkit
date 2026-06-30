@@ -28,7 +28,7 @@ export class Mutex {
       this._locked = true
       return Promise.resolve(this._release.bind(this))
     }
-    return new Promise<() => void>(resolve => {
+    return new Promise<() => void>((resolve) => {
       this._waiting.push(() => {
         resolve(this._release.bind(this))
       })

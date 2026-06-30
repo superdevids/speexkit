@@ -115,7 +115,7 @@ export function extname(p: string): string {
 export function normalize(p: string): string {
   const parts = p.split(/[\\/]+/)
   const stack: string[] = []
-  let isAbs = p.startsWith('/')
+  const isAbs = p.startsWith('/')
 
   for (const part of parts) {
     if (part === '' || part === '.') continue
@@ -188,7 +188,7 @@ export function parse(p: string): ParsedPath {
   const base = basename(p)
   const ext = extname(base)
   const name = ext ? base.slice(0, -ext.length) : base
-  const dir = root ? dirname(p) : (dirname(p) === '.' ? '' : dirname(p))
+  const dir = root ? dirname(p) : dirname(p) === '.' ? '' : dirname(p)
 
   return { root, dir, base, name, ext }
 }

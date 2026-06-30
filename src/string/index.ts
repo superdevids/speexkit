@@ -20,28 +20,34 @@ export function camelCase(str: string): string {
   const words = splitWords(str)
   if (words.length === 0) return ''
   const [firstWord, ...rest] = words
-  return firstWord!.toLowerCase() + rest.map(w => w[0]!.toUpperCase() + w.slice(1).toLowerCase()).join('')
+  return firstWord!.toLowerCase() + rest.map((w) => w[0]!.toUpperCase() + w.slice(1).toLowerCase()).join('')
 }
 
 /**
  * Converts a string to kebab-case.
  */
 export function kebabCase(str: string): string {
-  return splitWords(str).map(w => w.toLowerCase()).join('-')
+  return splitWords(str)
+    .map((w) => w.toLowerCase())
+    .join('-')
 }
 
 /**
  * Converts a string to snake_case.
  */
 export function snakeCase(str: string): string {
-  return splitWords(str).map(w => w.toLowerCase()).join('_')
+  return splitWords(str)
+    .map((w) => w.toLowerCase())
+    .join('_')
 }
 
 /**
  * Converts a string to PascalCase.
  */
 export function pascalCase(str: string): string {
-  return splitWords(str).map(w => w[0]!.toUpperCase() + w.slice(1).toLowerCase()).join('')
+  return splitWords(str)
+    .map((w) => w[0]!.toUpperCase() + w.slice(1).toLowerCase())
+    .join('')
 }
 
 /**
@@ -134,14 +140,14 @@ const HTML_UNESCAPE_MAP: Record<string, string> = {
  * Escapes HTML special characters (&, <, >, ", ').
  */
 export function escapeHtml(str: string): string {
-  return str.replace(/[&<>"'`\/]/g, ch => HTML_ESCAPE_MAP[ch] ?? ch)
+  return str.replace(/[&<>"'`/]/g, (ch) => HTML_ESCAPE_MAP[ch] ?? ch)
 }
 
 /**
  * Unescapes common HTML entities.
  */
 export function unescapeHtml(str: string): string {
-  return str.replace(/&(?:amp|lt|gt|quot|#39|#x27|#96|#x2F);/g, entity => HTML_UNESCAPE_MAP[entity] ?? entity)
+  return str.replace(/&(?:amp|lt|gt|quot|#39|#x27|#96|#x2F);/g, (entity) => HTML_UNESCAPE_MAP[entity] ?? entity)
 }
 
 /**
@@ -222,10 +228,10 @@ export function slugify(str: string): string {
 export function countOccurrences(str: string, substring: string): number {
   if (substring.length === 0 || str.length === 0) return 0
   let count = 0
-  let pos = 0
-  while ((pos = str.indexOf(substring, pos)) !== -1) {
+  let pos = str.indexOf(substring)
+  while (pos !== -1) {
     count++
-    pos += substring.length
+    pos = str.indexOf(substring, pos + substring.length)
   }
   return count
 }
@@ -249,11 +255,7 @@ export function levenshtein(a: string, b: string): number {
     curr[0] = i
     for (let j = 1; j <= bn; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1
-      curr[j] = Math.min(
-        prev[j]! + 1,
-        curr[j - 1]! + 1,
-        prev[j - 1]! + cost,
-      )
+      curr[j] = Math.min(prev[j]! + 1, curr[j - 1]! + 1, prev[j - 1]! + cost)
     }
     ;[prev, curr] = [curr, prev]
   }
@@ -301,11 +303,7 @@ export function maskString(
   if (start >= end || start < 0) return str
   const clampedStart = Math.max(0, start)
   const clampedEnd = Math.min(str.length, end)
-  return (
-    str.slice(0, clampedStart) +
-    maskChar.repeat(clampedEnd - clampedStart) +
-    str.slice(clampedEnd)
-  )
+  return str.slice(0, clampedStart) + maskChar.repeat(clampedEnd - clampedStart) + str.slice(clampedEnd)
 }
 
 /**
@@ -324,7 +322,7 @@ export function formatBytes(bytes: number, options?: { decimals?: number }): str
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   const dm = options?.decimals ?? (i === 0 ? 0 : 1)
   const index = Math.min(i, sizes.length - 1)
-  return parseFloat((bytes / Math.pow(k, index)).toFixed(dm)) + ' ' + sizes[index]
+  return `${parseFloat((bytes / k ** index).toFixed(dm))} ${sizes[index]}`
 }
 
 /**
@@ -370,12 +368,12 @@ export function pluralize(count: number, singular: string): string {
   const last = singular[singular.length - 1]
   const lastTwo = singular.slice(-2)
   if (last === 's' || last === 'x' || last === 'z' || lastTwo === 'ch' || lastTwo === 'sh') {
-    return singular + 'es'
+    return `${singular}es`
   }
   if (last === 'y' && singular.length > 2 && !'aeiou'.includes(singular[singular.length - 2]!)) {
-    return singular.slice(0, -1) + 'ies'
+    return `${singular.slice(0, -1)}ies`
   }
-  return singular + 's'
+  return `${singular}s`
 }
 
 /**
@@ -471,7 +469,7 @@ export function dedent(str: string): string {
     return min === null ? leading : Math.min(min, leading)
   }, null)
   if (indent === null || indent === 0) return str
-  return lines.map(line => line.slice(indent)).join('\n')
+  return lines.map((line) => line.slice(indent)).join('\n')
 }
 
 /**
@@ -514,7 +512,7 @@ export function swapCase(str: string): string {
  */
 export function toCobolCase(str: string): string {
   const words = splitWords(str)
-  return words.map(w => w.toUpperCase()).join('_')
+  return words.map((w) => w.toUpperCase()).join('_')
 }
 
 /**
@@ -545,16 +543,38 @@ export function charCount(str: string): Record<string, number> {
   return result
 }
 
-export function upperFirst(str:string):string{if(str.length===0)return str;return str[0]!.toUpperCase()+str.slice(1)}
+export function upperFirst(str: string): string {
+  if (str.length === 0) return str
+  return str[0]!.toUpperCase() + str.slice(1)
+}
 
-export function lowerFirst(str:string):string{if(str.length===0)return str;return str[0]!.toLowerCase()+str.slice(1)}
+export function lowerFirst(str: string): string {
+  if (str.length === 0) return str
+  return str[0]!.toLowerCase() + str.slice(1)
+}
 
-export function startCase(str:string):string{const w=splitWords(str);return w.map(x=>x[0]!.toUpperCase()+x.slice(1).toLowerCase()).join(' ')}
+export function startCase(str: string): string {
+  const w = splitWords(str)
+  return w.map((x) => x[0]!.toUpperCase() + x.slice(1).toLowerCase()).join(' ')
+}
 
-export function lowerCase(str:string):string{return splitWords(str).map(w=>w.toLowerCase()).join(' ')}
+export function lowerCase(str: string): string {
+  return splitWords(str)
+    .map((w) => w.toLowerCase())
+    .join(' ')
+}
 
-export function upperCase(str:string):string{return splitWords(str).map(w=>w.toUpperCase()).join(' ')}
+export function upperCase(str: string): string {
+  return splitWords(str)
+    .map((w) => w.toUpperCase())
+    .join(' ')
+}
 
-export function lines(str:string):string[]{if(str.length===0)return[];return str.split(/\r?\n/)}
+export function lines(str: string): string[] {
+  if (str.length === 0) return []
+  return str.split(/\r?\n/)
+}
 
-export function chars(str:string):string[]{return str.split('')}
+export function chars(str: string): string[] {
+  return str.split('')
+}

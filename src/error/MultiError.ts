@@ -90,9 +90,7 @@ export class MultiError extends Error {
  * }
  * ```
  */
-export function collectErrors<T>(
-  fn: () => T,
-): { result?: T; errors: Error[] } {
+export function collectErrors<T>(fn: () => T): { result?: T; errors: Error[] } {
   try {
     return { result: fn(), errors: [] }
   } catch (err) {

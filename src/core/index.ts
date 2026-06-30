@@ -65,7 +65,7 @@ function clone<T>(value: T, seen: WeakMap<object, unknown>): T {
   if (tag === '[object Set]') {
     const cloned = new Set<unknown>()
     seen.set(value as object, cloned)
-    ;(value as unknown as Set<unknown>).forEach(v => {
+    ;(value as unknown as Set<unknown>).forEach((v) => {
       cloned.add(clone(v, seen))
     })
     return cloned as unknown as T
@@ -128,10 +128,7 @@ export function deepMerge<T extends Record<string, unknown>>(...objects: Partial
       const existing = result[key]
 
       if (val !== undefined && isPlainObject(val) && isPlainObject(existing)) {
-        result[key] = deepMerge(
-          existing as Record<string, unknown>,
-          val as Record<string, unknown>
-        ) as T[keyof T]
+        result[key] = deepMerge(existing as Record<string, unknown>, val as Record<string, unknown>) as T[keyof T]
       } else if (val !== undefined) {
         result[key] = val as T[keyof T]
       }
@@ -152,11 +149,7 @@ export function deepMerge<T extends Record<string, unknown>>(...objects: Partial
  * @param options - Optional configuration.
  * @returns A debounced function with `.cancel()` and `.flush()`.
  */
-export function debounce<T extends (...args: unknown[]) => unknown>(
-  fn: T,
-  wait: number,
-  options?: DebounceOptions
-): DebouncedFunction<T> {
+export function debounce<T extends (...args: unknown[]) => unknown>(fn: T, wait: number, options?: DebounceOptions): DebouncedFunction<T> {
   const { leading = false, trailing = true, maxWait } = options ?? {}
 
   let timer: ReturnType<typeof setTimeout> | null = null
@@ -214,10 +207,7 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
     if (lastCallTime === null) return true
     const timeSinceLastCall = time - lastCallTime
     const timeSinceLastInvoke = time - lastInvokeTime
-    return (
-      timeSinceLastCall >= wait ||
-      (maxWait !== undefined && timeSinceLastInvoke >= maxWait)
-    )
+    return timeSinceLastCall >= wait || (maxWait !== undefined && timeSinceLastInvoke >= maxWait)
   }
 
   const debounced = function (this: unknown, ...args: Parameters<T>): void {
@@ -265,10 +255,7 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
  * @param wait - The number of milliseconds to throttle invocations to.
  * @returns A throttled function.
  */
-export function throttle<T extends (...args: unknown[]) => unknown>(
-  fn: T,
-  wait: number
-): (...args: Parameters<T>) => void {
+export function throttle<T extends (...args: unknown[]) => unknown>(fn: T, wait: number): (...args: Parameters<T>) => void {
   let lastTime = 0
   let timer: ReturnType<typeof setTimeout> | null = null
   let lastArgs: Parameters<T> | null = null
@@ -313,7 +300,7 @@ export function throttle<T extends (...args: unknown[]) => unknown>(
  */
 export function memoize<T extends (...args: unknown[]) => unknown>(
   fn: T,
-  resolver?: (...args: Parameters<T>) => string
+  resolver?: (...args: Parameters<T>) => string,
 ): MemoizedFunction<T> {
   const cache = new Map<string, ReturnType<T>>()
 
@@ -339,16 +326,8 @@ export function memoize<T extends (...args: unknown[]) => unknown>(
  * @param options - Retry configuration.
  * @returns A promise that resolves with the function result.
  */
-export function retry<T>(
-  fn: () => Promise<T>,
-  options?: RetryOptions
-): Promise<T> {
-  const {
-    attempts = 3,
-    baseDelay = 1000,
-    maxDelay = 30000,
-    shouldRetry = () => true,
-  } = options ?? {}
+export function retry<T>(fn: () => Promise<T>, options?: RetryOptions): Promise<T> {
+  const { attempts = 3, baseDelay = 1000, maxDelay = 30000, shouldRetry = () => true } = options ?? {}
 
   let attempt = 0
 
@@ -359,12 +338,9 @@ export function retry<T>(
         throw error
       }
 
-      const delay = Math.min(
-        baseDelay * Math.pow(2, attempt - 1) + Math.random() * baseDelay,
-        maxDelay
-      )
+      const delay = Math.min(baseDelay * 2 ** (attempt - 1) + Math.random() * baseDelay, maxDelay)
 
-      return new Promise<T>(resolve => {
+      return new Promise<T>((resolve) => {
         setTimeout(() => {
           resolve(execute())
         }, delay)
@@ -379,7 +355,7 @@ export function retry<T>(
  * A no-operation function that returns `undefined`.
  */
 export function noop(): void {
-  return undefined
+  // no operation
 }
 
 /**
@@ -399,9 +375,7 @@ export function identity<T>(value: T): T {
  * @param fn - The function to wrap.
  * @returns A function that runs only once.
  */
-export function once<T extends (...args: unknown[]) => unknown>(
-  fn: T
-): (...args: Parameters<T>) => ReturnType<T> {
+export function once<T extends (...args: unknown[]) => unknown>(fn: T): (...args: Parameters<T>) => ReturnType<T> {
   let called = false
   let result: ReturnType<T>
 
@@ -467,7 +441,7 @@ export function deepEqual(a: unknown, b: unknown): boolean {
   if (keysA.length !== keysB.length) return false
 
   for (const key of keysA) {
-    if (!Object.prototype.hasOwnProperty.call(bObj, key)) return false
+    if (!Object.hasOwn(bObj, key)) return false
     if (!deepEqual(aObj[key], bObj[key])) return false
   }
   return true

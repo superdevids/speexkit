@@ -57,7 +57,7 @@ export function pick<T extends Record<string, unknown>, K extends keyof T>(obj: 
  * Extracts a property value from each item in an array.
  */
 export function pluck<T, K extends keyof T>(items: T[], key: K): T[K][] {
-  return items.map(item => item[key])
+  return items.map((item) => item[key])
 }
 
 /**
@@ -140,7 +140,7 @@ export function orderBy<T>(items: T[], key: (item: T) => unknown, direction: Sor
  */
 export function uniqueBy<T>(items: T[], keyFn: (item: T) => unknown): T[] {
   const seen = new Set<unknown>()
-  return items.filter(item => {
+  return items.filter((item) => {
     const key = keyFn(item)
     if (seen.has(key)) return false
     seen.add(key)
@@ -237,7 +237,7 @@ export function topoSort<T extends { id: string; dependencies?: string[] }>(item
     throw new Error('Circular dependency detected')
   }
 
-  return sorted.map(id => itemMap.get(id)!)
+  return sorted.map((id) => itemMap.get(id)!)
 }
 
 export function slidingWindows<T>(items: T[], size: number, step: number = 1): T[][] {
@@ -341,7 +341,7 @@ export function compact<T>(items: (T | false | null | 0 | '' | undefined)[]): T[
  */
 export function difference<T>(a: T[], b: T[]): T[] {
   const setB = new Set(b)
-  return a.filter(item => !setB.has(item))
+  return a.filter((item) => !setB.has(item))
 }
 
 /**
@@ -352,7 +352,7 @@ export function difference<T>(a: T[], b: T[]): T[] {
  */
 export function intersection<T>(a: T[], b: T[]): T[] {
   const setB = new Set(b)
-  return a.filter(item => setB.has(item))
+  return a.filter((item) => setB.has(item))
 }
 
 /**
@@ -381,7 +381,7 @@ export function zip<T, U>(a: T[], b: U[]): [T, U][]
 export function zip<T, U, V>(a: T[], b: U[], c: V[]): [T, U, V][]
 export function zip<T>(...arrays: T[][]): T[][] {
   if (arrays.length === 0) return []
-  const minLen = Math.min(...arrays.map(a => a.length))
+  const minLen = Math.min(...arrays.map((a) => a.length))
   const result: T[][] = []
   for (let i = 0; i < minLen; i++) {
     const tuple: T[] = []
@@ -554,7 +554,7 @@ export function takeRight<T>(items: T[], n: number = 1): T[] {
  */
 export function without<T>(items: T[], ...values: T[]): T[] {
   const exclude = new Set(values)
-  return items.filter(item => !exclude.has(item))
+  return items.filter((item) => !exclude.has(item))
 }
 
 /**
@@ -581,10 +581,7 @@ const PROTO_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
  * @example pickBy({ a: 1, b: 'hello', c: 3 }, v => typeof v === 'number')
  *          // => { a: 1, c: 3 }
  */
-export function pickBy<T extends Record<string, unknown>>(
-  obj: T,
-  predicate: (value: T[keyof T], key: string) => boolean
-): Partial<T> {
+export function pickBy<T extends Record<string, unknown>>(obj: T, predicate: (value: T[keyof T], key: string) => boolean): Partial<T> {
   const result: Record<string, unknown> = {}
   for (const key of Object.keys(obj)) {
     if (predicate(obj[key] as T[keyof T], key)) {
@@ -604,10 +601,7 @@ export function pickBy<T extends Record<string, unknown>>(
  * @example omitBy({ a: 1, b: 'hello', c: 3 }, v => typeof v === 'number')
  *          // => { b: 'hello' }
  */
-export function omitBy<T extends Record<string, unknown>>(
-  obj: T,
-  predicate: (value: T[keyof T], key: string) => boolean
-): Partial<T> {
+export function omitBy<T extends Record<string, unknown>>(obj: T, predicate: (value: T[keyof T], key: string) => boolean): Partial<T> {
   const result: Record<string, unknown> = {}
   for (const key of Object.keys(obj)) {
     if (!predicate(obj[key] as T[keyof T], key)) {
@@ -629,8 +623,8 @@ export function omitBy<T extends Record<string, unknown>>(
  */
 export function mapKeys<T extends Record<string, unknown>>(
   obj: T,
-  mapper: (key: string, value: T[keyof T]) => string
-  ): Record<string, T[keyof T]> {
+  mapper: (key: string, value: T[keyof T]) => string,
+): Record<string, T[keyof T]> {
   const result: Record<string, T[keyof T]> = {}
   for (const key of Object.keys(obj)) {
     const newKey = mapper(key, obj[key] as T[keyof T])
@@ -650,10 +644,7 @@ export function mapKeys<T extends Record<string, unknown>>(
  * @example mapValues({ a: 1, b: 2 }, v => v * 2)
  *          // => { a: 2, b: 4 }
  */
-export function mapValues<T extends Record<string, unknown>, R>(
-  obj: T,
-  mapper: (value: T[keyof T], key: string) => R
-): Record<string, R> {
+export function mapValues<T extends Record<string, unknown>, R>(obj: T, mapper: (value: T[keyof T], key: string) => R): Record<string, R> {
   const result: Record<string, R> = {}
   for (const key of Object.keys(obj)) {
     result[key] = mapper(obj[key] as T[keyof T], key)
@@ -671,9 +662,7 @@ export function mapValues<T extends Record<string, unknown>, R>(
  * @example invert({ a: 'x', b: 'y', c: 'x' })
  *          // => { x: 'c', y: 'b' }
  */
-export function invert<T extends Record<string, string | number | symbol>>(
-  obj: T
-): { [K in T[keyof T]]: string } {
+export function invert<T extends Record<string, string | number | symbol>>(obj: T): { [K in T[keyof T]]: string } {
   const result = {} as Record<string | number | symbol, string>
   for (const key of Object.keys(obj)) {
     const val = obj[key] as T[keyof T]
@@ -695,10 +684,7 @@ export function invert<T extends Record<string, string | number | symbol>>(
  * @example invertBy({ a: 1, b: 2, c: 3 }, v => (v as number) % 2 === 0 ? 'even' : 'odd')
  *          // => { odd: ['a', 'c'], even: ['b'] }
  */
-export function invertBy<T extends Record<string, unknown>>(
-  obj: T,
-  mapper?: (value: T[keyof T]) => string
-): Record<string, string[]> {
+export function invertBy<T extends Record<string, unknown>>(obj: T, mapper?: (value: T[keyof T]) => string): Record<string, string[]> {
   const result: Record<string, string[]> = {}
   for (const key of Object.keys(obj)) {
     const val = mapper ? mapper(obj[key] as T[keyof T]) : String(obj[key])
@@ -717,10 +703,8 @@ export function invertBy<T extends Record<string, unknown>>(
  * @example toPairs({ a: 1, b: 2 })
  *          // => [['a', 1], ['b', 2]]
  */
-export function toPairs<T extends Record<string, unknown>>(
-  obj: T
-): Array<[string, T[keyof T]]> {
-  return Object.keys(obj).map(key => [key, obj[key] as T[keyof T]])
+export function toPairs<T extends Record<string, unknown>>(obj: T): Array<[string, T[keyof T]]> {
+  return Object.keys(obj).map((key) => [key, obj[key] as T[keyof T]])
 }
 
 /**
@@ -813,7 +797,7 @@ export function unset<T extends Record<string, unknown>>(obj: T, path: string): 
 export function mergeWith<T extends Record<string, unknown>>(
   target: T,
   source: Partial<T>,
-  mergeFn: (targetValue: unknown, sourceValue: unknown, key: string) => unknown
+  mergeFn: (targetValue: unknown, sourceValue: unknown, key: string) => unknown,
 ): T {
   const result = { ...target } as Record<string, unknown>
 
@@ -842,10 +826,7 @@ export function mergeWith<T extends Record<string, unknown>>(
  * @example defaults({ a: 1, b: undefined }, { a: 99, b: 2, c: 3 })
  *          // => { a: 1, b: 2, c: 3 }
  */
-export function defaults<T extends Record<string, unknown>>(
-  target: T,
-  ...sources: Array<Partial<T>>
-): T {
+export function defaults<T extends Record<string, unknown>>(target: T, ...sources: Array<Partial<T>>): T {
   const result = { ...target } as Record<string, unknown>
   for (const source of sources) {
     if (source === null || source === undefined) continue
@@ -869,11 +850,8 @@ export function defaults<T extends Record<string, unknown>>(
  * @example defaultsDeep({ a: { x: 1 } }, { a: { x: 99, y: 2 }, b: 3 })
  *          // => { a: { x: 1, y: 2 }, b: 3 }
  */
-export function defaultsDeep<T extends Record<string, unknown>>(
-  target: T,
-  ...sources: Array<Partial<T>>
-): T {
-  let result = { ...target } as Record<string, unknown>
+export function defaultsDeep<T extends Record<string, unknown>>(target: T, ...sources: Array<Partial<T>>): T {
+  const result = { ...target } as Record<string, unknown>
 
   for (const source of sources) {
     if (source === null || source === undefined) continue
@@ -894,10 +872,7 @@ export function defaultsDeep<T extends Record<string, unknown>>(
         sourceVal !== null &&
         !Array.isArray(sourceVal)
       ) {
-        result[key] = defaultsDeep(
-          existingVal as Record<string, unknown>,
-          sourceVal as Record<string, unknown>
-        )
+        result[key] = defaultsDeep(existingVal as Record<string, unknown>, sourceVal as Record<string, unknown>)
       }
     }
   }
@@ -938,11 +913,8 @@ export function deepFreeze<T>(obj: T): T {
  * @example at({ a: { b: 1, c: 2 } }, ['a.b', 'a.c'])
  *          // => [1, 2]
  */
-export function at<T = unknown>(
-  obj: unknown,
-  paths: string[]
-): (T | undefined)[] {
-  return paths.map(path => deepGet<T>(obj, path))
+export function at<T = unknown>(obj: unknown, paths: string[]): (T | undefined)[] {
+  return paths.map((path) => deepGet<T>(obj, path))
 }
 
 /**
@@ -955,10 +927,7 @@ export function at<T = unknown>(
  * @example renameKeys({ a: 1, b: 2, c: 3 }, { a: 'x', b: 'y' })
  *          // => { x: 1, y: 2, c: 3 }
  */
-export function renameKeys<T extends Record<string, unknown>>(
-  obj: T,
-  keyMap: Record<string, string>
-): Record<string, unknown> {
+export function renameKeys<T extends Record<string, unknown>>(obj: T, keyMap: Record<string, string>): Record<string, unknown> {
   const result: Record<string, unknown> = {}
   for (const key of Object.keys(obj)) {
     const newKey = key in keyMap ? keyMap[key]! : key
@@ -982,10 +951,7 @@ export function renameKeys<T extends Record<string, unknown>>(
  */
 export function diff<T>(a: T, b: T): Partial<T> {
   const result: Record<string, unknown> = {}
-  const allKeys = new Set([
-    ...Object.keys(a as Record<string, unknown>),
-    ...Object.keys(b as Record<string, unknown>)
-  ])
+  const allKeys = new Set([...Object.keys(a as Record<string, unknown>), ...Object.keys(b as Record<string, unknown>)])
 
   for (const key of allKeys) {
     const aVal = (a as Record<string, unknown>)[key]
@@ -1058,18 +1024,12 @@ function arraysEqual(a: unknown[], b: unknown[]): boolean {
  * @example fromKeys(['x', 'y'], (k, i) => `${k}${i}`)
  *          // => { x: 'x0', y: 'y1' }
  */
-export function fromKeys<K extends string, V>(
-  keys: K[],
-  value: V | ((key: K, index: number) => V)
-): Record<K, V> {
+export function fromKeys<K extends string, V>(keys: K[], value: V | ((key: K, index: number) => V)): Record<K, V> {
   const result = {} as Record<K, V>
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i]!
     if (PROTO_KEYS.has(key)) continue
-    result[key] = typeof value === 'function'
-      ? (value as (key: K, index: number) => V)(key, i)
-      : value
+    result[key] = typeof value === 'function' ? (value as (key: K, index: number) => V)(key, i) : value
   }
   return result
 }
-

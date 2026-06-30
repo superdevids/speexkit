@@ -1,6 +1,5 @@
-import { readFileSync } from 'node:fs'
-import { readdirSync, statSync } from 'node:fs'
-import { join, extname } from 'node:path'
+import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { extname, join } from 'node:path'
 
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'])
 
@@ -14,7 +13,13 @@ function collectSourceFiles(dir: string): string[] {
     const entries = readdirSync(dir, { withFileTypes: true })
     for (const entry of entries) {
       const fullPath = join(dir, entry.name)
-      if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === '.git' || entry.name === 'coverage' || entry.name === '.tsup') {
+      if (
+        entry.name === 'node_modules' ||
+        entry.name === 'dist' ||
+        entry.name === '.git' ||
+        entry.name === 'coverage' ||
+        entry.name === '.tsup'
+      ) {
         continue
       }
       if (entry.isDirectory()) {
@@ -43,10 +48,7 @@ export async function analyzeUsage(
 }> {
   const importLocations: string[] = []
   const escaped = escapeRegex(packageName)
-  const importRegex = new RegExp(
-    `(?:from\\s+['"]${escaped}(?:/['"]|['"])|require\\(\\s*['"]${escaped}(?:/|['"]))`,
-    'g',
-  )
+  const importRegex = new RegExp(`(?:from\\s+['"]${escaped}(?:/['"]|['"])|require\\(\\s*['"]${escaped}(?:/|['"]))`, 'g')
 
   const srcDir = join(projectPath, 'src')
   let files: string[]

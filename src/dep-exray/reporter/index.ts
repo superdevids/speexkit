@@ -1,4 +1,4 @@
-import type { ScanResult, ReplacementSuggestion, SecurityIssue } from '../types.js'
+import type { ReplacementSuggestion, ScanResult, SecurityIssue } from '../types.js'
 
 // ANSI color codes — zero dependencies
 const _ = {
@@ -19,18 +19,25 @@ function style(text: string, codes: string[]): string {
 
 function severityColor(severity: SecurityIssue['severity']): string {
   switch (severity) {
-    case 'critical': return style(severity.toUpperCase(), [_.bold, _.red])
-    case 'high': return style(severity.toUpperCase(), [_.red])
-    case 'medium': return style(severity.toUpperCase(), [_.yellow])
-    case 'low': return style(severity.toUpperCase(), [_.dim])
+    case 'critical':
+      return style(severity.toUpperCase(), [_.bold, _.red])
+    case 'high':
+      return style(severity.toUpperCase(), [_.red])
+    case 'medium':
+      return style(severity.toUpperCase(), [_.yellow])
+    case 'low':
+      return style(severity.toUpperCase(), [_.dim])
   }
 }
 
 function confidenceIcon(confidence: ReplacementSuggestion['confidence']): string {
   switch (confidence) {
-    case 'high': return style('●', [_.green])
-    case 'medium': return style('●', [_.yellow])
-    case 'low': return style('●', [_.red])
+    case 'high':
+      return style('●', [_.green])
+    case 'medium':
+      return style('●', [_.yellow])
+    case 'low':
+      return style('●', [_.red])
   }
 }
 
@@ -46,9 +53,21 @@ export function generateReport(result: ScanResult, jsonOutput?: boolean): string
   lines.push(t(`┌${'─'.repeat(58)}┐`))
   lines.push(t(`│${' '.repeat(18)}dep-exray Report${' '.repeat(21)}│`))
   lines.push(t(`├${'─'.repeat(58)}┤`))
-  lines.push(t(`│  ${style('📦 PROJECT:', [_.white])} ${style(result.projectName, [_.bold])}${' '.repeat(Math.max(1, 47 - result.projectName.length))}│`))
-  lines.push(t(`│  ${style('📊 DEPENDENCIES:', [_.white])} ${style(String(result.directDeps), [_.bold])} direct + ${style(String(result.transitiveDeps), [_.bold])} transitive${' '.repeat(Math.max(1, 27 - String(result.transitiveDeps).length))}│`))
-  lines.push(t(`│  ${style('💾 TOTAL SIZE:', [_.white])} ${style(result.totalEstimatedSize, [_.bold])}${' '.repeat(Math.max(1, 42 - result.totalEstimatedSize.length))}│`))
+  lines.push(
+    t(
+      `│  ${style('📦 PROJECT:', [_.white])} ${style(result.projectName, [_.bold])}${' '.repeat(Math.max(1, 47 - result.projectName.length))}│`,
+    ),
+  )
+  lines.push(
+    t(
+      `│  ${style('📊 DEPENDENCIES:', [_.white])} ${style(String(result.directDeps), [_.bold])} direct + ${style(String(result.transitiveDeps), [_.bold])} transitive${' '.repeat(Math.max(1, 27 - String(result.transitiveDeps).length))}│`,
+    ),
+  )
+  lines.push(
+    t(
+      `│  ${style('💾 TOTAL SIZE:', [_.white])} ${style(result.totalEstimatedSize, [_.bold])}${' '.repeat(Math.max(1, 42 - result.totalEstimatedSize.length))}│`,
+    ),
+  )
   lines.push(t(`├${'─'.repeat(58)}┤`))
 
   if (result.highImpactReplacements.length > 0) {
@@ -57,8 +76,14 @@ export function generateReport(result: ScanResult, jsonOutput?: boolean): string
       const autoPr = item.autoPrReady ? style('✓ Auto-PR ready', [_.green]) : style('Manual review needed', [_.dim])
       const confIcon = confidenceIcon(item.confidence)
       lines.push(t(`├${'─'.repeat(58)}┤`))
-      lines.push(t(`│  ${style('✗', [_.red])} ${style(item.packageName, [_.bold])} (${item.estimatedSizeReduction})${' '.repeat(Math.max(1, 38 - item.estimatedSizeReduction.length))}│`))
-      lines.push(t(`│  ${style('→', [_.dim])} ${style(item.replacement, [_.cyan])}${' '.repeat(Math.max(1, 51 - item.replacement.length))}│`))
+      lines.push(
+        t(
+          `│  ${style('✗', [_.red])} ${style(item.packageName, [_.bold])} (${item.estimatedSizeReduction})${' '.repeat(Math.max(1, 38 - item.estimatedSizeReduction.length))}│`,
+        ),
+      )
+      lines.push(
+        t(`│  ${style('→', [_.dim])} ${style(item.replacement, [_.cyan])}${' '.repeat(Math.max(1, 51 - item.replacement.length))}│`),
+      )
       lines.push(t(`│  ${style('└─', [_.dim])} ${autoPr}  ${confIcon} ${item.confidence}${' '.repeat(Math.max(1, 35))}│`))
     }
   }
@@ -70,8 +95,14 @@ export function generateReport(result: ScanResult, jsonOutput?: boolean): string
       const autoPr = item.autoPrReady ? style('✓ Auto-PR ready', [_.green]) : style('Manual review needed', [_.dim])
       const confIcon = confidenceIcon(item.confidence)
       lines.push(t(`├${'─'.repeat(58)}┤`))
-      lines.push(t(`│  ${style('✗', [_.red])} ${style(item.packageName, [_.bold])} (${item.estimatedSizeReduction})${' '.repeat(Math.max(1, 38 - item.estimatedSizeReduction.length))}│`))
-      lines.push(t(`│  ${style('→', [_.dim])} ${style(item.replacement, [_.cyan])}${' '.repeat(Math.max(1, 51 - item.replacement.length))}│`))
+      lines.push(
+        t(
+          `│  ${style('✗', [_.red])} ${style(item.packageName, [_.bold])} (${item.estimatedSizeReduction})${' '.repeat(Math.max(1, 38 - item.estimatedSizeReduction.length))}│`,
+        ),
+      )
+      lines.push(
+        t(`│  ${style('→', [_.dim])} ${style(item.replacement, [_.cyan])}${' '.repeat(Math.max(1, 51 - item.replacement.length))}│`),
+      )
       lines.push(t(`│  ${style('└─', [_.dim])} ${autoPr}  ${confIcon} ${item.confidence}${' '.repeat(Math.max(1, 35))}│`))
     }
   }
@@ -81,7 +112,11 @@ export function generateReport(result: ScanResult, jsonOutput?: boolean): string
     lines.push(t(`│  ${style('🔴', [_.red])} ${style('SECURITY ISSUES', [_.bold, _.red])}${' '.repeat(33)}│`))
     for (const issue of result.securityIssues) {
       lines.push(t(`├${'─'.repeat(58)}┤`))
-      lines.push(t(`│  ${severityColor(issue.severity)} ${style(issue.cveId, [_.bold])} in ${issue.packageName}${' '.repeat(Math.max(1, 40 - issue.packageName.length))}│`))
+      lines.push(
+        t(
+          `│  ${severityColor(issue.severity)} ${style(issue.cveId, [_.bold])} in ${issue.packageName}${' '.repeat(Math.max(1, 40 - issue.packageName.length))}│`,
+        ),
+      )
       lines.push(t(`│  ${style('→', [_.dim])} ${issue.fix}${' '.repeat(Math.max(1, 52 - issue.fix.length))}│`))
     }
   }

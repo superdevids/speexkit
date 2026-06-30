@@ -10,7 +10,7 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number } | nul
   if (h.length === 3) h = h[0]! + h[0] + h[1]! + h[1] + h[2]! + h[2]
   if (h.length !== 6) return null
   const num = Number.parseInt(h, 16)
-  if (isNaN(num)) return null
+  if (Number.isNaN(num)) return null
   return {
     r: (num >> 16) & 255,
     g: (num >> 8) & 255,
@@ -25,8 +25,11 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number } | nul
  * @example rgbToHex(255, 136, 0) // "#ff8800"
  */
 export function rgbToHex(r: number, g: number, b: number): string {
-  const toHex = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0')
-  return '#' + toHex(r) + toHex(g) + toHex(b)
+  const toHex = (n: number) =>
+    Math.max(0, Math.min(255, Math.round(n)))
+      .toString(16)
+      .padStart(2, '0')
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`
 }
 
 /**
@@ -39,11 +42,7 @@ export function lighten(hex: string, percent: number): string {
   const rgb = hexToRgb(hex)
   if (!rgb) return hex
   const factor = percent / 100
-  return rgbToHex(
-    rgb.r + (255 - rgb.r) * factor,
-    rgb.g + (255 - rgb.g) * factor,
-    rgb.b + (255 - rgb.b) * factor,
-  )
+  return rgbToHex(rgb.r + (255 - rgb.r) * factor, rgb.g + (255 - rgb.g) * factor, rgb.b + (255 - rgb.b) * factor)
 }
 
 /**
@@ -56,11 +55,7 @@ export function darken(hex: string, percent: number): string {
   const rgb = hexToRgb(hex)
   if (!rgb) return hex
   const factor = percent / 100
-  return rgbToHex(
-    rgb.r * (1 - factor),
-    rgb.g * (1 - factor),
-    rgb.b * (1 - factor),
-  )
+  return rgbToHex(rgb.r * (1 - factor), rgb.g * (1 - factor), rgb.b * (1 - factor))
 }
 
 /**
@@ -82,7 +77,7 @@ function relativeLuminance(hex: string): number {
   const rgb = hexToRgb(hex)
   if (!rgb) return 0
   const vals = [rgb.r / 255, rgb.g / 255, rgb.b / 255].map((c) => {
-    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
   })
   return 0.2126 * vals[0]! + 0.7152 * vals[1]! + 0.0722 * vals[2]!
 }
@@ -134,9 +129,15 @@ export function hexToHsl(hex: string): { h: number; s: number; l: number } | nul
   const s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
   let h = 0
   switch (max) {
-    case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break
-    case g: h = ((b - r) / d + 2) / 6; break
-    case b: h = ((r - g) / d + 4) / 6; break
+    case r:
+      h = ((g - b) / d + (g < b ? 6 : 0)) / 6
+      break
+    case g:
+      h = ((b - r) / d + 2) / 6
+      break
+    case b:
+      h = ((r - g) / d + 4) / 6
+      break
   }
   return {
     h: Math.round(h * 360),
@@ -255,27 +256,79 @@ export function alpha(hex: string, opacity: number): string {
   const rgb = hexToRgb(hex)
   if (!rgb) return hex
   const a = Math.max(0, Math.min(1, opacity))
-  const alphaHex = Math.round(a * 255).toString(16).padStart(2, '0')
+  const alphaHex = Math.round(a * 255)
+    .toString(16)
+    .padStart(2, '0')
   return rgbToHex(rgb.r, rgb.g, rgb.b) + alphaHex
 }
 
-export function rgbToHsl(r:number,g:number,b:number):{h:number;s:number;l:number}{
-  const rn=Math.max(0,Math.min(255,r))/255,gn=Math.max(0,Math.min(255,g))/255,bn=Math.max(0,Math.min(255,b))/255
-  const max=Math.max(rn,gn,bn),min=Math.min(rn,gn,bn),l=(max+min)/2
-  if(max===min)return{h:0,s:0,l:Math.round(l*100)}
-  const d=max-min,s=l>0.5?d/(2-max-min):d/(max+min)
-  let h=0
-  switch(max){case rn:h=((gn-bn)/d+(gn<bn?6:0))/6;break;case gn:h=((bn-rn)/d+2)/6;break;case bn:h=((rn-gn)/d+4)/6;break}
-  return{h:Math.round(((h*360)%360+360)%360),s:Math.round(s*100),l:Math.round(l*100)}
+export function rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: number } {
+  const rn = Math.max(0, Math.min(255, r)) / 255,
+    gn = Math.max(0, Math.min(255, g)) / 255,
+    bn = Math.max(0, Math.min(255, b)) / 255
+  const max = Math.max(rn, gn, bn),
+    min = Math.min(rn, gn, bn),
+    l = (max + min) / 2
+  if (max === min) return { h: 0, s: 0, l: Math.round(l * 100) }
+  const d = max - min,
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+  let h = 0
+  switch (max) {
+    case rn:
+      h = ((gn - bn) / d + (gn < bn ? 6 : 0)) / 6
+      break
+    case gn:
+      h = ((bn - rn) / d + 2) / 6
+      break
+    case bn:
+      h = ((rn - gn) / d + 4) / 6
+      break
+  }
+  return { h: Math.round((((h * 360) % 360) + 360) % 360), s: Math.round(s * 100), l: Math.round(l * 100) }
 }
-export function hslToRgb(h:number,s:number,l:number):{r:number;g:number;b:number}{
-  const hue=((h%360)+360)%360/360,sat=Math.max(0,Math.min(100,s))/100,lig=Math.max(0,Math.min(100,l))/100
-  if(sat===0){const v=Math.round(lig*255);return{r:v,g:v,b:v}}
-  const hue2rgb=(p:number,q:number,t:number):number=>{let tt=t;if(tt<0)tt+=1;if(tt>1)tt-=1;if(tt<1/6)return p+(q-p)*6*tt;if(tt<1/2)return q;if(tt<2/3)return p+(q-p)*(2/3-tt)*6;return p}
-  const q=lig<0.5?lig*(1+sat):lig+sat-lig*sat,p=2*lig-q
-  return{r:Math.round(hue2rgb(p,q,hue+1/3)*255),g:Math.round(hue2rgb(p,q,hue)*255),b:Math.round(hue2rgb(p,q,hue-1/3)*255)}
+export function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: number } {
+  const hue = (((h % 360) + 360) % 360) / 360,
+    sat = Math.max(0, Math.min(100, s)) / 100,
+    lig = Math.max(0, Math.min(100, l)) / 100
+  if (sat === 0) {
+    const v = Math.round(lig * 255)
+    return { r: v, g: v, b: v }
+  }
+  const hue2rgb = (p: number, q: number, t: number): number => {
+    let tt = t
+    if (tt < 0) tt += 1
+    if (tt > 1) tt -= 1
+    if (tt < 1 / 6) return p + (q - p) * 6 * tt
+    if (tt < 1 / 2) return q
+    if (tt < 2 / 3) return p + (q - p) * (2 / 3 - tt) * 6
+    return p
+  }
+  const q = lig < 0.5 ? lig * (1 + sat) : lig + sat - lig * sat,
+    p = 2 * lig - q
+  return {
+    r: Math.round(hue2rgb(p, q, hue + 1 / 3) * 255),
+    g: Math.round(hue2rgb(p, q, hue) * 255),
+    b: Math.round(hue2rgb(p, q, hue - 1 / 3) * 255),
+  }
 }
-export function saturate(hex:string,amount:number):string{const h=hexToHsl(hex);if(!h)return hex;const s=Math.min(100,Math.max(0,h.s+amount));return hslToHex(h.h,s,h.l)}
-export function desaturate(hex:string,amount:number):string{const h=hexToHsl(hex);if(!h)return hex;const s=Math.min(100,Math.max(0,h.s-amount));return hslToHex(h.h,s,h.l)}
-export function adjustHue(hex:string,degrees:number):string{const h=hexToHsl(hex);if(!h)return hex;const hue=(((h.h+degrees)%360)+360)%360;return hslToHex(hue,h.s,h.l)}
-export function rgba(r:number,g:number,b:number,a:number=1):string{return 'rgba('+Math.max(0,Math.min(255,Math.round(r)))+', '+Math.max(0,Math.min(255,Math.round(g)))+', '+Math.max(0,Math.min(255,Math.round(b)))+', '+Math.max(0,Math.min(1,a))+')'}
+export function saturate(hex: string, amount: number): string {
+  const h = hexToHsl(hex)
+  if (!h) return hex
+  const s = Math.min(100, Math.max(0, h.s + amount))
+  return hslToHex(h.h, s, h.l)
+}
+export function desaturate(hex: string, amount: number): string {
+  const h = hexToHsl(hex)
+  if (!h) return hex
+  const s = Math.min(100, Math.max(0, h.s - amount))
+  return hslToHex(h.h, s, h.l)
+}
+export function adjustHue(hex: string, degrees: number): string {
+  const h = hexToHsl(hex)
+  if (!h) return hex
+  const hue = (((h.h + degrees) % 360) + 360) % 360
+  return hslToHex(hue, h.s, h.l)
+}
+export function rgba(r: number, g: number, b: number, a: number = 1): string {
+  return `rgba(${Math.max(0, Math.min(255, Math.round(r)))}, ${Math.max(0, Math.min(255, Math.round(g)))}, ${Math.max(0, Math.min(255, Math.round(b)))}, ${Math.max(0, Math.min(1, a))})`
+}

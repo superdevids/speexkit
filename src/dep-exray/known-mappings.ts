@@ -1,5 +1,3 @@
-
-
 export interface PackageMapping {
   name: string
   size: string
@@ -115,16 +113,10 @@ export const KNOWN_MAPPINGS: PackageMapping[] = [
 
 /** K N O W N_ C V E S. */
 export const KNOWN_CVES: Record<string, { cve: string; severity: string; fix: string }[]> = {
-  'ansi-regex': [
-    { cve: 'CVE-2021-3807', severity: 'high', fix: 'Update to ansi-regex@6.0.1 or later' },
-  ],
-  'semver': [
-    { cve: 'CVE-2022-25883', severity: 'medium', fix: 'Update to semver@7.5.2 or later' },
-  ],
-  'json5': [
-    { cve: 'CVE-2022-46175', severity: 'high', fix: 'Update to json5@2.2.3 or later' },
-  ],
-  'lodash': [
+  'ansi-regex': [{ cve: 'CVE-2021-3807', severity: 'high', fix: 'Update to ansi-regex@6.0.1 or later' }],
+  semver: [{ cve: 'CVE-2022-25883', severity: 'medium', fix: 'Update to semver@7.5.2 or later' }],
+  json5: [{ cve: 'CVE-2022-46175', severity: 'high', fix: 'Update to json5@2.2.3 or later' }],
+  lodash: [
     { cve: 'CVE-2020-28502', severity: 'high', fix: 'Update to lodash@4.17.21 or later' },
     { cve: 'CVE-2020-8203', severity: 'medium', fix: 'Update to lodash@4.17.21 or later' },
   ],

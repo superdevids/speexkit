@@ -23,17 +23,14 @@
 export function isStrongPassword(value: string, options?: IsStrongPasswordOptions): boolean {
   if (typeof value !== 'string') return false
 
-  const {
-    minLength = 8,
-    minLowercase = 1,
-    minUppercase = 1,
-    minNumbers = 1,
-    minSymbols = 1,
-  } = options ?? {}
+  const { minLength = 8, minLowercase = 1, minUppercase = 1, minNumbers = 1, minSymbols = 1 } = options ?? {}
 
   if (value.length < minLength) return false
 
-  let lc = 0, uc = 0, num = 0, sym = 0
+  let lc = 0,
+    uc = 0,
+    num = 0,
+    sym = 0
   for (let i = 0; i < value.length; i++) {
     const c = value[i]!
     if (c >= 'a' && c <= 'z') lc++

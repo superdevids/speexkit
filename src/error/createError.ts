@@ -2,16 +2,16 @@
  * Predefined error codes mapped to their default HTTP status codes.
  */
 export interface ErrorCodeMap {
-  'BAD_REQUEST': 400
-  'UNAUTHORIZED': 401
-  'FORBIDDEN': 403
-  'NOT_FOUND': 404
-  'CONFLICT': 409
-  'VALIDATION_ERROR': 422
-  'TOO_MANY': 429
-  'INTERNAL': 500
-  'BAD_GATEWAY': 502
-  'UNAVAILABLE': 503
+  BAD_REQUEST: 400
+  UNAUTHORIZED: 401
+  FORBIDDEN: 403
+  NOT_FOUND: 404
+  CONFLICT: 409
+  VALIDATION_ERROR: 422
+  TOO_MANY: 429
+  INTERNAL: 500
+  BAD_GATEWAY: 502
+  UNAVAILABLE: 503
 }
 
 /** Union of all known error codes. */
@@ -19,16 +19,16 @@ export type ErrorCode = keyof ErrorCodeMap
 
 /** Default HTTP status for each error code. */
 const defaultStatus: ErrorCodeMap = {
-  'BAD_REQUEST': 400,
-  'UNAUTHORIZED': 401,
-  'FORBIDDEN': 403,
-  'NOT_FOUND': 404,
-  'CONFLICT': 409,
-  'VALIDATION_ERROR': 422,
-  'TOO_MANY': 429,
-  'INTERNAL': 500,
-  'BAD_GATEWAY': 502,
-  'UNAVAILABLE': 503,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  CONFLICT: 409,
+  VALIDATION_ERROR: 422,
+  TOO_MANY: 429,
+  INTERNAL: 500,
+  BAD_GATEWAY: 502,
+  UNAVAILABLE: 503,
 }
 
 /**
@@ -48,11 +48,7 @@ export class TypedError extends Error {
   readonly status: number
   readonly details?: unknown
 
-  constructor(
-    code: string,
-    message: string,
-    options?: { status?: number; details?: unknown; cause?: unknown },
-  ) {
+  constructor(code: string, message: string, options?: { status?: number; details?: unknown; cause?: unknown }) {
     super(message, { cause: options?.cause })
     this.name = 'TypedError'
     this.code = code
@@ -101,11 +97,7 @@ export class TypedError extends Error {
  * throw createError('NOT_FOUND', 'User not found', { details: { userId: 1 } })
  * ```
  */
-export function createError(
-  code: ErrorCode,
-  message: string,
-  options?: { details?: unknown; cause?: unknown },
-): TypedError {
+export function createError(code: ErrorCode, message: string, options?: { details?: unknown; cause?: unknown }): TypedError {
   return new TypedError(code, message, options)
 }
 

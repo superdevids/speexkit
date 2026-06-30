@@ -9,7 +9,7 @@ export class DivisionByZeroError extends Error {
 }
 
 function getPrecision(value: number): number {
-  if (!isFinite(value)) return 0
+  if (!Number.isFinite(value)) return 0
   const eIndex = String(value).indexOf('e')
   if (eIndex > -1) {
     const exp = parseInt(String(value).slice(eIndex + 1), 10)
@@ -22,7 +22,7 @@ function getPrecision(value: number): number {
 }
 
 function toPrecisionFactor(a: number, b: number): number {
-  return Math.pow(10, Math.max(getPrecision(a), getPrecision(b)))
+  return 10 ** Math.max(getPrecision(a), getPrecision(b))
 }
 
 /**
@@ -85,7 +85,7 @@ export function div(a: number, b: number): number {
  * @returns The rounded value.
  */
 export function round(value: number, precision: number = 0): number {
-  const factor = Math.pow(10, precision)
+  const factor = 10 ** precision
   // Use toPrecision to avoid floating-point multiplication errors
   // e.g. 1.005 * 100 = 100.49999999999999 without this fix
   const shifted = Number((value * factor).toPrecision(15))
@@ -100,7 +100,7 @@ export function round(value: number, precision: number = 0): number {
  * @returns The floored value.
  */
 export function floor(value: number, precision: number = 0): number {
-  const factor = Math.pow(10, precision)
+  const factor = 10 ** precision
   return Math.floor(value * factor) / factor
 }
 
@@ -112,7 +112,7 @@ export function floor(value: number, precision: number = 0): number {
  * @returns The ceiled value.
  */
 export function ceil(value: number, precision: number = 0): number {
-  const factor = Math.pow(10, precision)
+  const factor = 10 ** precision
   return Math.ceil(value * factor) / factor
 }
 
@@ -304,10 +304,7 @@ export function correlation(x: number[], y: number[]): number {
  * @param options - Formatting options.
  * @returns The formatted currency string.
  */
-export function formatCurrency(
-  value: number,
-  options?: { locale?: string; currency?: string; notation?: 'standard' | 'compact' },
-): string {
+export function formatCurrency(value: number, options?: { locale?: string; currency?: string; notation?: 'standard' | 'compact' }): string {
   const locale = options?.locale ?? 'id-ID'
   const currency = options?.currency ?? 'IDR'
   const notation = options?.notation ?? 'standard'

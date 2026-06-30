@@ -1,6 +1,6 @@
 /**
  * Validates a phone number globally.
- * 
+ *
  * - Accepts formats: +62812..., 0812..., 62812... etc
  * - Minimum 7 digits, maximum 15 digits (after removing non-digit chars)
  * - Strips +, spaces, dashes, parentheses before checking

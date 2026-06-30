@@ -145,8 +145,7 @@ export class Logger {
  */
 export const consoleTransport: Transport = {
   log(level, message, meta) {
-    const metaStr =
-      meta !== undefined && Object.keys(meta).length > 0 ? ` ${JSON.stringify(meta)}` : ''
+    const metaStr = meta !== undefined && Object.keys(meta).length > 0 ? ` ${JSON.stringify(meta)}` : ''
     console.log(`[${level.toUpperCase()}] ${message}${metaStr}`)
   },
 }

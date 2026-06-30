@@ -15,10 +15,7 @@
  *   async (data) => process(data),
  * ])
  */
-export async function waterfall(
-  tasks: Array<(arg: any) => Promise<any>>,
-  initial?: any,
-): Promise<any> {
+export async function waterfall(tasks: Array<(arg: any) => Promise<any>>, initial?: any): Promise<any> {
   let result = initial
   for (const task of tasks) {
     result = await task(result)

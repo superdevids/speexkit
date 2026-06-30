@@ -29,10 +29,7 @@ const RESET = '\x1b[0m'
  * @param options.colors - Enable ANSI color output (default: `true`).
  * @param options.timestamp - Prepend an ISO-8601 timestamp (default: `false`).
  */
-export function createConsoleTransport(options?: {
-  colors?: boolean
-  timestamp?: boolean
-}): Transport {
+export function createConsoleTransport(options?: { colors?: boolean; timestamp?: boolean }): Transport {
   const useColors = options?.colors !== false
   const showTimestamp = options?.timestamp ?? false
 
@@ -73,14 +70,10 @@ export function createConsoleTransport(options?: {
  *                         Defaults to `process.stdout` in Node.js, falls
  *                         back to `console.log` in browsers.
  */
-export function createJsonTransport(options?: {
-  stream?: { write(data: string): void }
-}): Transport {
+export function createJsonTransport(options?: { stream?: { write(data: string): void } }): Transport {
   const writeStream =
     options?.stream ??
-    (typeof process !== 'undefined' &&
-    typeof process.stdout !== 'undefined' &&
-    typeof process.stdout.write === 'function'
+    (typeof process !== 'undefined' && typeof process.stdout !== 'undefined' && typeof process.stdout.write === 'function'
       ? (process.stdout as { write(data: string): void })
       : undefined)
 
@@ -96,7 +89,7 @@ export function createJsonTransport(options?: {
       }
       const line = JSON.stringify(entry)
       if (writeStream !== undefined) {
-        writeStream.write(line + '\n')
+        writeStream.write(`${line}\n`)
       } else {
         console.log(line)
       }
@@ -118,17 +111,14 @@ export function createJsonTransport(options?: {
  *                          (default: 10 MB). **Note:** rotation is not
  *                          yet implemented; this is reserved for future use.
  */
-export function createFileTransport(
-  filename: string,
-  _options?: { maxSize?: number },
-): Transport {
+export function createFileTransport(filename: string, _options?: { maxSize?: number }): Transport {
   // Try to resolve fs synchronously at construction time
   // Uses process.versions.node as a heuristic for Node.js environment
   let fs: { appendFileSync: (path: string, data: string) => void } | null = null
   try {
     if (typeof process !== 'undefined' && process.versions?.node) {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const m = require('fs') as { appendFileSync: (path: string, data: string) => void }
+      const m = require('node:fs') as { appendFileSync: (path: string, data: string) => void }
       fs = m
     }
   } catch {
@@ -139,8 +129,7 @@ export function createFileTransport(
     log(level, message, meta) {
       if (fs === null) return
 
-      const metaStr =
-        meta !== undefined && Object.keys(meta).length > 0 ? ` ${JSON.stringify(meta)}` : ''
+      const metaStr = meta !== undefined && Object.keys(meta).length > 0 ? ` ${JSON.stringify(meta)}` : ''
       const line = `[${new Date().toISOString()}] [${level.toUpperCase()}] ${message}${metaStr}\n`
 
       try {
@@ -167,10 +156,7 @@ export function createFileTransport(
  *                                  (default: 5000). Set to `0` to disable
  *                                  interval flushing.
  */
-export function createBufferedTransport(
-  transport: Transport,
-  options?: { maxSize?: number; flushIntervalMs?: number },
-): Transport {
+export function createBufferedTransport(transport: Transport, options?: { maxSize?: number; flushIntervalMs?: number }): Transport {
   const maxSize = options?.maxSize ?? 100
   const flushIntervalMs = options?.flushIntervalMs ?? 5000
 

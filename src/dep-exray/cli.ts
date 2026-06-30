@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { scanProject } from './scanner/index.js'
 import { generateReport } from './reporter/index.js'
+import { scanProject } from './scanner/index.js'
 
 function parseArgs(args: string[]): { path: string; json: boolean; verbose: boolean; fix: boolean } {
   let path = '.'

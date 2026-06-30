@@ -1,7 +1,7 @@
-import { readFileSync, readdirSync, existsSync } from 'node:fs'
-import { join, basename } from 'node:path'
-import type { ScanResult, ReplacementSuggestion, SecurityIssue, ScannerConfig } from '../types.js'
-import { KNOWN_MAPPINGS, KNOWN_CVES, type PackageMapping } from '../known-mappings.js'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { basename, join } from 'node:path'
+import { KNOWN_CVES, KNOWN_MAPPINGS, type PackageMapping } from '../known-mappings.js'
+import type { ReplacementSuggestion, ScannerConfig, ScanResult, SecurityIssue } from '../types.js'
 
 interface LockfilePackages {
   [key: string]: { version?: string; dependencies?: Record<string, string> } | undefined
@@ -38,7 +38,9 @@ function parseLockfile(projectPath: string): LockfileData | null {
     }
 
     if (json.dependencies && Object.keys(packages).length === 0) {
-      for (const [key, val] of Object.entries(json.dependencies as Record<string, { version?: string; requires?: Record<string, string> }>)) {
+      for (const [key, val] of Object.entries(
+        json.dependencies as Record<string, { version?: string; requires?: Record<string, string> }>,
+      )) {
         packages[key] = { version: val.version, dependencies: val.requires }
       }
     }
@@ -79,7 +81,13 @@ function collectSourceFiles(dir: string): string[] {
   try {
     const entries = readdirSync(dir, { withFileTypes: true })
     for (const entry of entries) {
-      if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === '.git' || entry.name === 'coverage' || entry.name === '.tsup') {
+      if (
+        entry.name === 'node_modules' ||
+        entry.name === 'dist' ||
+        entry.name === '.git' ||
+        entry.name === 'coverage' ||
+        entry.name === '.tsup'
+      ) {
         continue
       }
       const full = join(dir, entry.name)
@@ -156,9 +164,10 @@ export async function scanProject(config: ScannerConfig): Promise<ScanResult> {
 
     const mappingSize = parseSize(sizeMap[mapping.name] ?? '0 KB')
     const replacementSize = mapping.replacement.startsWith('native') ? 0 : 5
-    const reductionStr = mappingSize > 1024
-      ? `${(mappingSize / 1024).toFixed(1)} MB → ${replacementSize} KB`
-      : `${mappingSize.toFixed(0)} KB → ${replacementSize} KB`
+    const reductionStr =
+      mappingSize > 1024
+        ? `${(mappingSize / 1024).toFixed(1)} MB → ${replacementSize} KB`
+        : `${mappingSize.toFixed(0)} KB → ${replacementSize} KB`
 
     const suggestion: ReplacementSuggestion = {
       packageName: mapping.name,
@@ -200,9 +209,7 @@ export async function scanProject(config: ScannerConfig): Promise<ScanResult> {
   }
   totalSizeKB += transitiveCount * 30
 
-  const totalSizeStr = totalSizeKB > 1024
-    ? `${(totalSizeKB / 1024).toFixed(1)} MB`
-    : `${totalSizeKB.toFixed(0)} KB`
+  const totalSizeStr = totalSizeKB > 1024 ? `${(totalSizeKB / 1024).toFixed(1)} MB` : `${totalSizeKB.toFixed(0)} KB`
 
   return {
     projectName: pkg.name,

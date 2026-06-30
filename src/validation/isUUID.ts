@@ -24,5 +24,5 @@ export function isUUID(value: string, version?: 1 | 2 | 3 | 4 | 5): boolean {
   if (typeof value !== 'string' || value.length === 0) return false
   if (value === UUID_NIL) return true
   if (version !== undefined) return UUIDS_RE[version]?.test(value) ?? false
-  return Object.values(UUIDS_RE).some(r => r.test(value))
+  return Object.values(UUIDS_RE).some((r) => r.test(value))
 }

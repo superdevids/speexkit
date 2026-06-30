@@ -4,7 +4,7 @@ import type { RetryOptions } from '../core/index.js'
  * Delays execution for the given number of milliseconds.
  */
 export function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 /**
@@ -27,7 +27,7 @@ export async function timeout<T>(promise: Promise<T>, ms: number, errorMessage?:
  */
 export async function raceWithTimeout<T>(promise: Promise<T>, ms: number): Promise<T | 'timeout'> {
   let timer: ReturnType<typeof setTimeout> | undefined
-  const timeoutPromise = new Promise<'timeout'>(resolve => {
+  const timeoutPromise = new Promise<'timeout'>((resolve) => {
     timer = setTimeout(() => resolve('timeout'), ms)
   })
   try {
@@ -41,10 +41,7 @@ export async function raceWithTimeout<T>(promise: Promise<T>, ms: number): Promi
  * Maps over an array with an async function, using Promise.allSettled.
  * Returns an array of PromiseSettledResult.
  */
-export async function allSettledMap<T, R>(
-  items: T[],
-  fn: (item: T) => Promise<R>,
-): Promise<PromiseSettledResult<R>[]> {
+export async function allSettledMap<T, R>(items: T[], fn: (item: T) => Promise<R>): Promise<PromiseSettledResult<R>[]> {
   return await Promise.allSettled(items.map(fn))
 }
 
@@ -53,11 +50,7 @@ export async function allSettledMap<T, R>(
  *
  * @param concurrency - Maximum number of concurrent operations (default Infinity)
  */
-export async function parallelMap<T, R>(
-  items: T[],
-  fn: (item: T) => Promise<R>,
-  concurrency = Number.POSITIVE_INFINITY,
-): Promise<R[]> {
+export async function parallelMap<T, R>(items: T[], fn: (item: T) => Promise<R>, concurrency = Number.POSITIVE_INFINITY): Promise<R[]> {
   if (concurrency === Number.POSITIVE_INFINITY) {
     return await Promise.all(items.map(fn))
   }
@@ -127,23 +120,55 @@ export interface Deferred<T> {
   reject: (reason: unknown) => void
 }
 
+export { batch } from './batch.js'
+export type { MemoizeAsyncOptions } from './memoize.js'
+export { memoizeAsync } from './memoize.js'
+export { Mutex } from './mutex.js'
+export type { QueueOptions } from './queue.js'
 // ─── Queue, Semaphore, memoizeAsync ─────────────────────
 export { Queue } from './queue.js'
-export type { QueueOptions } from './queue.js'
-export { Semaphore } from './semaphore.js'
-export { memoizeAsync } from './memoize.js'
-export type { MemoizeAsyncOptions } from './memoize.js'
-
 // ─── RateLimiter, Mutex, batch, waterfall ───────────────
 export { RateLimiter } from './ratelimit.js'
-export { Mutex } from './mutex.js'
-export { batch } from './batch.js'
+export { Semaphore } from './semaphore.js'
 export { waterfall } from './waterfall.js'
 
-export async function detect<T>(items:T[],fn:(item:T,index:number)=>Promise<boolean>):Promise<T|undefined>{for(let i=0;i<items.length;i++){if(await fn(items[i]!,i))return items[i]}return undefined}
+export async function detect<T>(items: T[], fn: (item: T, index: number) => Promise<boolean>): Promise<T | undefined> {
+  for (let i = 0; i < items.length; i++) {
+    if (await fn(items[i]!, i)) return items[i]
+  }
+  return undefined
+}
 
-export function debounceAsync<T extends(...args:any[])=>Promise<any>>(fn:T,wait:number):(...args:Parameters<T>)=>Promise<ReturnType<T>>{let timer:ReturnType<typeof setTimeout>|undefined;let pendingReject:((reason:unknown)=>void)|null=null;return function(this:any,...args:any[]){if(timer!==undefined){clearTimeout(timer);pendingReject?.(new Error('Superseded'))}return new Promise((resolve,reject)=>{pendingReject=reject;timer=setTimeout(async()=>{try{resolve(await fn.apply(this,args))}catch(e){reject(e)}},wait)})}}
+export function debounceAsync<T extends (...args: any[]) => Promise<any>>(
+  fn: T,
+  wait: number,
+): (...args: Parameters<T>) => Promise<ReturnType<T>> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  let pendingReject: ((reason: unknown) => void) | null = null
+  return function (this: any, ...args: any[]) {
+    if (timer !== undefined) {
+      clearTimeout(timer)
+      pendingReject?.(new Error('Superseded'))
+    }
+    return new Promise((resolve, reject) => {
+      pendingReject = reject
+      timer = setTimeout(async () => {
+        try {
+          resolve(await fn.apply(this, args))
+        } catch (e) {
+          reject(e)
+        }
+      }, wait)
+    })
+  }
+}
 
-export async function mapSeries<T,R>(items:T[],fn:(item:T,index:number)=>Promise<R>):Promise<R[]>{const results:R[]=[];for(let i=0;i<items.length;i++)results.push(await fn(items[i]!,i));return results}
+export async function mapSeries<T, R>(items: T[], fn: (item: T, index: number) => Promise<R>): Promise<R[]> {
+  const results: R[] = []
+  for (let i = 0; i < items.length; i++) results.push(await fn(items[i]!, i))
+  return results
+}
 
-export async function eachSeries<T>(items:T[],fn:(item:T,index:number)=>Promise<void>):Promise<void>{for(let i=0;i<items.length;i++)await fn(items[i]!,i)}
+export async function eachSeries<T>(items: T[], fn: (item: T, index: number) => Promise<void>): Promise<void> {
+  for (let i = 0; i < items.length; i++) await fn(items[i]!, i)
+}

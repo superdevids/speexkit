@@ -31,7 +31,7 @@ export function parseCsv(input: string, options?: CsvOptions): Record<string, st
   if (header) {
     const [head, ...body] = rows
     if (head === undefined) return []
-    return body.map(row => {
+    return body.map((row) => {
       const record: Record<string, string> = {}
       for (let i = 0; i < head.length; i++) {
         if (head[i] === '__proto__' || head[i] === 'constructor' || head[i] === 'prototype') continue
@@ -41,7 +41,7 @@ export function parseCsv(input: string, options?: CsvOptions): Record<string, st
     })
   }
 
-  return rows.map(row => {
+  return rows.map((row) => {
     const record: Record<string, string> = {}
     for (let i = 0; i < row.length; i++) {
       record[String(i)] = row[i]!
@@ -91,10 +91,10 @@ export function stringifyCsv(data: Record<string, unknown>[], options?: { delimi
   if (data.length === 0) return ''
 
   const headers = Object.keys(data[0]!)
-  const lines: string[] = [headers.map(v => escapeCsvField(v, delimiter)).join(delimiter)]
+  const lines: string[] = [headers.map((v) => escapeCsvField(v, delimiter)).join(delimiter)]
 
   for (const record of data) {
-    const row = headers.map(h => escapeCsvField(String(record[h] ?? ''), delimiter))
+    const row = headers.map((h) => escapeCsvField(String(record[h] ?? ''), delimiter))
     lines.push(row.join(delimiter))
   }
 
@@ -103,7 +103,7 @@ export function stringifyCsv(data: Record<string, unknown>[], options?: { delimi
 
 function escapeCsvField(value: string, delimiter: string): string {
   if (value.includes('"') || value.includes(delimiter) || value.includes('\n') || value.includes('\r')) {
-    return '"' + value.replace(/"/g, '""') + '"'
+    return `"${value.replace(/"/g, '""')}"`
   }
   return value
 }
@@ -146,6 +146,20 @@ export function envBool(name: string, default_?: boolean): boolean {
   return value === 'true' || value === '1' || value === 'yes'
 }
 
-export function envArray(name:string,default_?:string[]):string[]{const value=typeof process!=='undefined'?process.env[name]:undefined;if(value===undefined||value==='')return default_??[];return value.split(',').map(v=>v.trim()).filter(v=>v.length>0)}
+export function envArray(name: string, default_?: string[]): string[] {
+  const value = typeof process !== 'undefined' ? process.env[name] : undefined
+  if (value === undefined || value === '') return default_ ?? []
+  return value
+    .split(',')
+    .map((v) => v.trim())
+    .filter((v) => v.length > 0)
+}
 
-export function safeJsonStringify(value:unknown,default_?:string):string{try{const r=JSON.stringify(value);return r!==undefined?r:(default_??'')}catch{return default_??''}}
+export function safeJsonStringify(value: unknown, default_?: string): string {
+  try {
+    const r = JSON.stringify(value)
+    return r !== undefined ? r : (default_ ?? '')
+  } catch {
+    return default_ ?? ''
+  }
+}
