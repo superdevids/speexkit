@@ -1,6 +1,6 @@
 # speexkit — Module Reference
 
-v1.4.12 | 400+ exports | 19 modules | 0 deps | 1,477 tests
+v1.4.13 | 400+ exports | 20 modules | 0 deps | 1,503 tests
 
 > 📋 **[ARCHITECTURE.md](./ARCHITECTURE.md)** — Module architecture, NDArray internals, build & design
 > 📋 **[PRD.md](./PRD.md)** — Product roadmap & feature priorities (v1.4.x → v3.0)

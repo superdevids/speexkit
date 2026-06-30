@@ -8,7 +8,7 @@
 - ML module: StandardScaler, LinearRegression, KMeans, metrics
 - Stats module: normalPDF, ttestInd, pearsonCorrelation, skewness
 - Viz-data module: histogram, kde, boxPlotData, ecdf, colorMap
-- 19 modules, 400+ exports, 1,477 tests, zero deps
+- 20 modules, 400+ exports, 1,503 tests, zero deps
 
 ## v1.5.0 — Planned
 

@@ -86,9 +86,29 @@
       "import": "./dist/validation/index.js",
       "types": "./dist/validation/index.d.ts"
     },
+    "./validation/is-email": {
+      "import": "./dist/validation/isEmail.js",
+      "types": "./dist/validation/isEmail.d.ts"
+    },
+    "./validation/is-url": {
+      "import": "./dist/validation/isURL.js",
+      "types": "./dist/validation/isURL.d.ts"
+    },
+    "./validation/is-uuid": {
+      "import": "./dist/validation/isUUID.js",
+      "types": "./dist/validation/isUUID.d.ts"
+    },
     "./error": {
       "import": "./dist/error/index.js",
       "types": "./dist/error/index.d.ts"
+    },
+    "./error/multi-error": {
+      "import": "./dist/error/MultiError.js",
+      "types": "./dist/error/MultiError.d.ts"
+    },
+    "./error/create-error": {
+      "import": "./dist/error/createError.js",
+      "types": "./dist/error/createError.d.ts"
     },
     "./logger": {
       "import": "./dist/logger/index.js",

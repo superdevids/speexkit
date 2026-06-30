@@ -1,6 +1,6 @@
 # SpeexKit
 
-JavaScript/TypeScript utility toolkit — 400+ functions, 19 modules, zero dependencies.
+JavaScript/TypeScript utility toolkit — 400+ functions, 20 modules, zero dependencies.
 
 ```bash
 npm install speexkit

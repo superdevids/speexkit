@@ -331,6 +331,98 @@ export function accuracyScore(yt: number[], yp: number[]): number {
   return c / yt.length
 }
 
+export class LabelEncoder {
+  private m = new Map<string | number, number>()
+  private cls: (string | number)[] = []
+  private f = false
+  fit(y: (string | number)[]): this {
+    if (!y.length) throw Error('empty')
+    this.cls = [...new Set(y)].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+    this.m = new Map(this.cls.map((c, i) => [c, i]))
+    this.f = true
+    return this
+  }
+  transform(y: (string | number)[]): number[] {
+    if (!this.f) throw Error('fit')
+    return y.map((v) => {
+      const r = this.m.get(v)
+      if (r === undefined) throw Error('unknown label')
+      return r
+    })
+  }
+  fitTransform(y: (string | number)[]): number[] {
+    // biome-ignore lint/suspicious/noFocusedTests: ML training method, not test focus
+    return this.fit(y).transform(y)
+  }
+  inverseTransform(y: number[]): (string | number)[] {
+    if (!this.f) throw Error('fit')
+    return y.map((v) => this.cls[v]!)
+  }
+  get classes_(): (string | number)[] {
+    return this.cls
+  }
+}
+
+export class KNN {
+  private k: number
+  private w: 'uniform' | 'distance'
+  private X: number[][] = []
+  private y: number[] = []
+  private cls: number[] = []
+  private f = false
+  constructor(o?: { nNeighbors?: number; weights?: 'uniform' | 'distance' }) {
+    this.k = o?.nNeighbors ?? 5
+    this.w = o?.weights ?? 'uniform'
+  }
+  fit(X: number[][], y: number[]): this {
+    if (!X.length) throw Error('empty')
+    this.X = X
+    this.y = y
+    this.cls = [...new Set(y)].sort((a, b) => a - b)
+    this.f = true
+    return this
+  }
+  predict(X: number[][]): number[] {
+    if (!this.f) throw Error('fit')
+    if (!X.length) throw Error('empty')
+    return X.map((x) => {
+      const ds = this.X.map((t, i) => ({ d: Math.sqrt(sqDist(x, t)), i }))
+      ds.sort((a, b) => a.d - b.d)
+      const kk = Math.min(this.k, ds.length)
+      const votes = new Map<number, number>()
+      for (let j = 0; j < kk; j++) {
+        const { d, i } = ds[j]!
+        const lb = this.y[i]!
+        const wt = this.w === 'distance' ? 1 / (d + 1e-10) : 1
+        votes.set(lb, (votes.get(lb) ?? 0) + wt)
+      }
+      let bestLb = 0, bestV = 0
+      for (const [lb, v] of votes) {
+        if (v > bestV) { bestV = v; bestLb = lb }
+      }
+      return bestLb
+    })
+  }
+  predictProbabilities(X: number[][]): number[][] {
+    if (!this.f) throw Error('fit')
+    if (!X.length) throw Error('empty')
+    return X.map((x) => {
+      const ds = this.X.map((t, i) => ({ d: Math.sqrt(sqDist(x, t)), i }))
+      ds.sort((a, b) => a.d - b.d)
+      const kk = Math.min(this.k, ds.length)
+      const votes = new Map<number, number>()
+      for (let j = 0; j < kk; j++) {
+        const { d, i } = ds[j]!
+        const lb = this.y[i]!
+        const wt = this.w === 'distance' ? 1 / (d + 1e-10) : 1
+        votes.set(lb, (votes.get(lb) ?? 0) + wt)
+      }
+      const total = [...votes.values()].reduce((a, b) => a + b, 0)
+      return this.cls.map((c) => (votes.get(c) ?? 0) / (total || 1))
+    })
+  }
+}
+
 export function r2Score(yt: number[], yp: number[]): number {
   const my = yt.reduce((a, b) => a + b, 0) / yt.length
   let sr = 0,

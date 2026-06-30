@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.4.13 (2026-06-30)
+- Added LabelEncoder (scikit-learn style categorical encoder) — 14th ML export
+- Added KNN Classifier (k-nearest neighbors, supports uniform/distance weighting)
+- Added 5 sub-entry points: isEmail, isURL, isUUID, MultiError, createError
+- Updated build to 33 entry points (tsup + package.json exports)
+- Added ML test suite: 26 tests covering all 15 ML exports
+- Total: 1,503 tests across 25 test files, 20 modules
+- Biome format & lint fixes across all source files
+
 ## v1.4.10 (2026-06-29)
 - Fixed: camelCase(null) crash — added null guard in splitWords
 - Fixed: isEmail(null) crash — added typeof guard

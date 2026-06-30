@@ -28,11 +28,11 @@
 
 **"The Zero-Dependency TypeScript Standard Library"**
 
-SpeexKit aims to be the single most comprehensive zero-dependency TypeScript utility toolkit — a drop-in replacement for lodash, mathjs, validator.js, date-fns, and basic scikit-learn/NumPy/ SciPy functionality, all in one package with zero runtime dependencies and full tree-shakeability.
+SpeexKit aims to be the single most comprehensive zero-dependency TypeScript utility toolkit — a drop-in replacement for lodash, mathjs, validator.js, date-fns, and basic scikit-learn/NumPy/SciPy functionality, all in one package with zero runtime dependencies and full tree-shakeability.
 
 ### 1.2 One-Line Pitch
 
-> SpeexKit is a **zero-dependency TypeScript toolkit** delivering **400+ functions** across **19 modules** — from NDArray (NumPy-style) and ML (scikit-learn-style) to validation, async concurrency, functional programming, color manipulation, cryptography, and dependency scanning — all **tree-shakeable, type-safe, and free of external dependencies**.
+> SpeexKit is a **zero-dependency TypeScript toolkit** delivering **400+ functions** across **20 modules** — from NDArray (NumPy-style) and ML (scikit-learn-style) to validation, async concurrency, functional programming, color manipulation, cryptography, and dependency scanning — all **tree-shakeable, type-safe, and free of external dependencies**.
 
 ### 1.3 Current State (v1.4.12)
 
@@ -40,9 +40,9 @@ SpeexKit aims to be the single most comprehensive zero-dependency TypeScript uti
 |--------|-------|
 | Bundle Size | ~200 KB (25 KB gzipped) |
 | Runtime Dependencies | **Zero** |
-| Modules | **19** |
+| Modules | **20** |
 | Exported Functions | **400+** |
-| Tests | **1,477** across 24 test files |
+| Tests | **1,503** across 25 test files |
 | TypeScript | Strict mode, **0 errors** |
 | CLI Tools | `dep-exray` (dependency scanner) |
 | Build | ESM-only, 33 entry points, tree-shakeable |
@@ -169,7 +169,7 @@ No other library combines **zero dependencies** with **400+ functions spanning N
 | 14 | **io** | 6 | ✅ Stable | P0 |
 | 15 | **nlfunction** | 25 | ✅ Stable | P0 |
 | 16 | **nlarray** | 55+ | ✅ Stable | P0 |
-| 17 | **ml** | 14 | ✅ Stable | P1 |
+| 17 | **ml** | 15 | ✅ Stable | P1 |
 | 18 | **stats** | 13 | ✅ Stable | P1 |
 | 19 | **viz-data** | 7 | ✅ Stable | P1 |
 | 20 | **dep-exray** | 5 + CLI | ✅ Stable | P1 |
@@ -217,11 +217,11 @@ No other library combines **zero dependencies** with **400+ functions spanning N
 
 ### v1.4.x — Foundation (Current)
 
-**Theme:** Stabilize and harden all 19 modules.
+**Theme:** Stabilize and harden all 20 modules.
 
 | Feature | Priority | Status |
 |---------|----------|--------|
-| 19 modules, 400+ exports | P0 | ✅ Done |
+| 20 modules, 400+ exports | P0 | ✅ Done |
 | Zero dependencies | P0 | ✅ Done |
 | 1,477 tests | P0 | ✅ Done |
 | NDArray with broadcasting/matmul | P0 | ✅ Done |
@@ -233,10 +233,10 @@ No other library combines **zero dependencies** with **400+ functions spanning N
 | TypeScript strict, 0 errors | P0 | ✅ Done |
 
 **Goals:**
-- [x] All 19 modules fully functional
+- [x] All 20 modules fully functional
 - [x] Zero regression risk
 - [x] Documented API surface
-- [x] 1,477+ tests passing
+- [x] 1,503+ tests passing
 
 ---
 
@@ -246,10 +246,10 @@ No other library combines **zero dependencies** with **400+ functions spanning N
 
 | Feature | Priority | Effort |
 |---------|----------|--------|
-| KNN Classifier (k-nearest neighbors) | P1 | M |
-| PCA (Principal Component Analysis) | P1 | L |
-| Logistic Regression | P1 | M |
-| OneHotEncoder / LabelEncoder | P2 | S |
+| KNN Classifier (k-nearest neighbors) | P1 | M | ✅ Done (v1.4.13) |
+| PCA (Principal Component Analysis) | P1 | L | |
+| Logistic Regression | P1 | M | |
+| OneHotEncoder / LabelEncoder | P2 | S | ⚠️ LabelEncoder done (v1.4.13) |
 | trainTestSplit — stratified sampling | P2 | S |
 | Cross-validation (k-fold) | P2 | M |
 | ML module test coverage to > 90% | P1 | M |
@@ -511,7 +511,7 @@ npm publish (dist/ only)
 
 ### 7.2 When to Choose SpeexKit
 
-- **You want one package for everything** — 19 modules, 400+ functions
+- **You want one package for everything** — 20 modules, 400+ functions
 - **You need NDArray or ML in JS/TS** — No other zero-dep option exists
 - **You care about bundle size** — 25 KB gzip for the full toolkit
 - **You want zero supply chain risk** — No runtime dependencies
@@ -533,7 +533,7 @@ npm publish (dist/ only)
 | 2 | **ML algorithm correctness** — LinearRegression/KMeans divergence from reference | Medium | High | **High** | Validate outputs against scikit-learn reference, test on known datasets |
 | 3 | **Bundle size creep** — New modules bloat the main barrel | Low | Medium | **Medium** | Size-limit CI gate (60 KB max), deep imports for heavy modules |
 | 4 | **Browser compatibility** — Node APIs used in crypto/io modules | Medium | Medium | **Medium** | Document Node-only modules, provide browser fallbacks where possible |
-| 5 | **Maintenance burden** — 19 modules need ongoing updates | Medium | Low | **Medium** | Modular architecture allows isolated changes, shared test utilities |
+| 5 | **Maintenance burden** — 20 modules need ongoing updates | Medium | Low | **Medium** | Modular architecture allows isolated changes, shared test utilities |
 | 6 | **Community adoption** — Hard to displace lodash | High | Medium | **Medium** | Focus on unique value (NDArray, ML), not replacement |
 | 7 | **TypeScript breaking changes** — Future TS versions break types | Low | High | **High** | Pin TS version, CI tests across multiple TS versions |
 | 8 | **dep-exray false positives** — Incorrect replacement suggestions | Medium | Low | **Low** | Confidence scoring, manual review gate for suggestions |
@@ -548,8 +548,8 @@ npm publish (dist/ only)
 
 | Version | Tests | Modules | Exports | Coverage | Target Downloads/Week |
 |---------|-------|---------|---------|----------|---------------------|
-| v1.4.x (Current) | 1,477 | 19 | 400+ | ~90% | — |
-| v1.5.0 | 1,600+ | 19 | 420+ | >90% | 500+ |
+| v1.4.x (Current) | 1,503 | 20 | 400+ | ~90% | — |
+| v1.5.0 | 1,600+ | 20 | 420+ | >90% | 500+ |
 | v1.6.0 | 1,800+ | 22 | 460+ | >92% | 1,000+ |
 | v1.7.0 | 2,000+ | 25 | 500+ | >92% | 2,000+ |
 | v2.0.0 | 2,500+ | 28 | 550+ | >93% | 5,000+ |

@@ -303,6 +303,8 @@ export {
   cosineSimilarity,
   euclideanDistance,
   KMeans,
+  KNN,
+  LabelEncoder,
   LinearRegression,
   MinMaxScaler,
   manhattanDistance,

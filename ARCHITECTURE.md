@@ -25,7 +25,7 @@
 
 ## 1. Overview
 
-SpeexKit is a **zero-dependency TypeScript utility toolkit** providing 400+ functions across 19 modules. It aims to be a drop-in replacement for combinations of lodash, mathjs, date-fns, validator.js, and basic NumPy/SciPy/scikit-learn functionality — all in a single, tree-shakeable, zero-dependency package.
+SpeexKit is a **zero-dependency TypeScript utility toolkit** providing 400+ functions across 20 modules. It aims to be a drop-in replacement for combinations of lodash, mathjs, date-fns, validator.js, and basic NumPy/SciPy/scikit-learn functionality — all in a single, tree-shakeable, zero-dependency package.
 
 The library is designed for maximum **tree-shakeability**: each module is fully independent, has its own entry point, and never imports from another speexkit module.
 
@@ -63,7 +63,7 @@ The library is designed for maximum **tree-shakeability**: each module is fully 
 ```
 speexkit/
 ├── src/
-│   ├── index.ts              # Barrel — re-exports all 19 modules (512 lines)
+│   ├── index.ts              # Barrel — re-exports all 20 modules (512 lines)
 │   │
 │   ├── core/                 # 12 functions: deepClone, deepMerge, pipe, compose...
 │   ├── math/                 # 35 functions: clamp, median, stddev, percentile...
