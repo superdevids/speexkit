@@ -111,7 +111,7 @@ speexkit/
 │       ├── known-mappings.ts #   Package replacement database
 │       └── cli.ts            #   CLI entry point (npx dep-exray .)
 │
-├── tests/                    # 24 test files, 1,477 tests
+├── tests/                    # 25 test files, 1,503 tests
 │   ├── core.test.ts
 │   ├── math.test.ts
 │   ├── date.test.ts
@@ -181,7 +181,7 @@ speexkit/
 | Module | Size (LOC) | Exports | Description |
 |--------|-----------|---------|-------------|
 | **nlarray** | 2,011 | 1 class + 6 ufuncs | NDArray — NumPy-style: broadcasting, slicing, matmul, axis reductions, 50+ methods |
-| **ml** | 134 | 14 | StandardScaler, MinMaxScaler, LinearRegression, KMeans, trainTestSplit, metrics |
+| **ml** | 200+ | 15 | StandardScaler, MinMaxScaler, LinearRegression, KMeans, LabelEncoder, KNN, trainTestSplit, metrics, distances |
 | **stats** | 123 | 13 | gammaLn, erf, normalPDF/CDF, binomialPMF, poissonPMF, skewness, kurtosis, ttestInd, pearson/spearman |
 | **viz-data** | 79 | 7 | histogram, kde, boxPlotData, ecdf, colorMap, sturgesBins, freedmanDiaconisBins |
 | **dep-exray** | ~300 | 5 + CLI | scanProject, generateReport, analyzeUsage, KNOWN_MAPPINGS, KNOWN_CVES |
@@ -465,7 +465,7 @@ KNOWN_MAPPINGS = {
 | **Brutal tests** | Vitest | Stress tests: 10 phases, 0 failures |
 | **Coverage** | @vitest/coverage-v8 | Target >90% |
 
-### Test Count: 1,477 across 24 test files
+### Test Count: 1,503 across 25 test files
 
 ### Test Patterns
 

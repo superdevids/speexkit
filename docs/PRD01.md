@@ -223,7 +223,7 @@ No other library combines **zero dependencies** with **400+ functions spanning N
 |---------|----------|--------|
 | 20 modules, 400+ exports | P0 | ✅ Done |
 | Zero dependencies | P0 | ✅ Done |
-| 1,477 tests | P0 | ✅ Done |
+| 1,503 tests (25 test files) | P0 | ✅ Done |
 | NDArray with broadcasting/matmul | P0 | ✅ Done |
 | ML: StandardScaler, LinearRegression, KMeans | P1 | ✅ Done |
 | Stats: normalPDF, ttestInd, pearson, spearman | P1 | ✅ Done |

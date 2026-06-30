@@ -9,7 +9,7 @@ npm install speexkit
 ## Features
 
 - **NDArray** — NumPy-style arrays: broadcasting, slicing, matmul, axis reductions
-- **ML** — StandardScaler, LinearRegression, KMeans, KNN, PCA, trainTestSplit, metrics
+- **ML** — StandardScaler, MinMaxScaler, LinearRegression, KMeans, LabelEncoder, KNN, trainTestSplit, metrics
 - **Stats** — normalPDF, ttestInd, skewness, kurtosis, pearsonCorrelation
 - **Viz** — histogram, kde, boxPlotData, ecdf, colorMap
 - **Functional** — curry, pipe, ifElse, when, unless, converge, memoizeSync
@@ -64,7 +64,7 @@ isStrongPassword('P@ssw0rd!');
 | speexkit/async | Queue, Semaphore, RateLimiter, Mutex, retryAsync, debounceAsync |
 | speexkit/validation | 21 validators: isEmail, isIP, isUUID, isCreditCard, isStrongPassword |
 | speexkit/collection | groupBy, topoSort, deepGet, pickBy, mapValues, diff, deepFreeze |
-| speexkit/ml | StandardScaler, MinMaxScaler, LinearRegression, KMeans, metrics |
+| speexkit/ml | StandardScaler, MinMaxScaler, LinearRegression, KMeans, LabelEncoder, KNN, metrics, distances |
 | speexkit/stats | normalPDF, ttestInd, skewness, kurtosis, pearsonCorrelation |
 | speexkit/viz-data | histogram, kde, boxPlotData, ecdf, colorMap |
 | speexkit/nlarray | NDArray class with broadcasting, slicing, matmul, ufuncs |
@@ -92,7 +92,7 @@ isStrongPassword('P@ssw0rd!');
 
 ## Quality
 
-- 1,477 tests across 24 test files — all passing
+- 1,503 tests across 25 test files — all passing
 - 0 runtime dependencies
 - TypeScript strict — full .d.ts declarations
 - Tree-shakeable — ESM with sideEffects: false

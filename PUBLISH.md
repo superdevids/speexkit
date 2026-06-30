@@ -13,7 +13,7 @@ git push origin master --tags
 
 - [ ] npm run lint && npm run typecheck
 - [ ] npm run build
-- [ ] npm run test:coverage (1,477 tests passing)
+- [ ] npm run test:coverage (1,503 tests passing)
 - [ ] CHANGELOG.md updated
 - [ ] Version bumped in package.json
 - [ ] npm login verified
