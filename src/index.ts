@@ -81,6 +81,9 @@ export {
   unzip,
   without,
   zip,
+  paginate,
+  rotate,
+  transpose,
 } from './collection/index.js'
 // ─── color (utilities) ──────────────────────────────────
 export {
@@ -135,6 +138,8 @@ export {
   generateToken,
   hash,
   randomHex,
+  sha256,
+  sha512,
   simpleHash,
   xorCipher,
 } from './crypto/index.js'
@@ -199,11 +204,12 @@ export {
   subDays,
   subMonths,
   subYears,
-  timeAgo,
   timeRemaining,
   toTimezone,
   unix,
   weekOfYear,
+  humanizeDuration,
+  getHolidays,
 } from './date/index.js'
 export type {
   DependencyInfo,
@@ -220,13 +226,17 @@ export {
   KNOWN_MAPPINGS,
   scanProject,
 } from './dep-exray/index.js'
-export type { ErrorCode } from './error/index.js'
-// ─── error (typed errors) ───────────────────────────────
+export type { ErrorCode, Result, OkImpl, ErrImpl } from './error/index.js'
+// ─── error (typed errors + result type) ─────────────────
 export {
   collectErrors,
   createError,
+  err,
+  Err,
   isTypedError,
   MultiError,
+  ok,
+  Ok,
   TypedError,
 } from './error/index.js'
 
@@ -240,6 +250,9 @@ export {
   safeJsonParse,
   safeJsonStringify,
   stringifyCsv,
+  readJSONFile,
+  writeJSONFile,
+  watchFile,
 } from './io/index.js'
 export type {
   LogLevel,
@@ -269,7 +282,6 @@ export {
   div,
   factorial,
   floor,
-  formatCurrency,
   gcd,
   geometricMean,
   inRange,
@@ -382,10 +394,12 @@ export {
   chars,
   countOccurrences,
   dedent,
+  diacriticsRemove,
   escapeHtml,
   escapeRegExp,
   formatBytes,
   fuzzyMatch,
+  highlightMatches,
   isAnagram,
   isPalindrome,
   kebabCase,
@@ -399,7 +413,6 @@ export {
   padEnd,
   padStart,
   pascalCase,
-  pluralize,
   randomBoolean,
   randomString,
   reverse,
@@ -411,6 +424,7 @@ export {
   swapCase,
   template,
   toCobolCase,
+  toTitleCase,
   trim,
   trimEnd,
   trimStart,
@@ -422,6 +436,7 @@ export {
   uuid,
   wordCount,
   words,
+  wrap,
 } from './string/index.js'
 export {
   assertDefined,
@@ -458,18 +473,25 @@ export {
   isAlphanumeric,
   isBase64,
   isCreditCard,
+  isCronExpression,
   isEmail,
   isFloat,
   isHexadecimal,
+  isIBAN,
   isInt,
   isIP,
   isIPv4,
   isIPv6,
+  isISBN,
   isJSON,
+  isJWT,
+  isLatLng,
   isLength,
+  isMACAddress,
   isNumeric,
   isPhone,
   isPort,
+  isSemVer,
   isSlug,
   isStrongPassword,
   isURL,
@@ -486,3 +508,51 @@ export {
   kde,
   sturgesBins,
 } from './viz-data/index.js'
+// ─── events (typed EventEmitter) ──────────────────────────
+export { EventBus, EventEmitter, createPubSub, type WildcardPayload } from './events/index.js'
+// ─── cache (LRU/LFU/TTL) ──────────────────────────────────
+export { CacheStatsCollector, LRUCache, LFUCache, TTLCache, memoizeWithCache, type CacheStats } from './cache/index.js'
+// ─── resilience (circuit breaker, bulkhead, retry) ────────
+export { Bulkhead, CircuitBreaker, Fallback, Timeout, retryWithBackoff, type CircuitBreakerOptions, type CircuitState, type RetryWithBackoffOptions } from './resilience/index.js'
+// ─── auth (JWT/PKCE) ─────────────────────────────────────
+export { decodeJWT, generatePKCE, parseBasicAuth, signJWT, verifyJWT } from './auth/index.js'
+// ─── schema (zod-lite) ────────────────────────────────────
+export { ValidationError, Schema, OptionalSchema, NullableSchema, StringSchema, NumberSchema, BooleanSchema, ArraySchema, ObjectSchema, EnumSchema, LiteralSchema, s, type Infer } from './schema/index.js'
+// ─── storage (universal storage wrapper) ──────────────────
+export { createStorage, Storage, memoryDriver, localStorageDriver, sessionStorageDriver, cookieDriver, type StorageDriver, type StorageOptions, type CookieDriverOptions } from './storage/index.js'
+// ─── state-machine (FSM) ─────────────────────────────────
+export { createMachine, type Machine, type MachineConfig, type MachineContext } from './state-machine/index.js'
+// ─── structures (Trie, Graph, Heap, etc) ─────────────────
+export { BloomFilter, Deque, DisjointSet, Graph, Heap, LinkedList, PriorityQueue, Trie } from './structures/index.js'
+// ─── mock (fake data generator) ──────────────────────────
+export { fakeAddress, fakeAvatar, fakeBoolean, fakeCity, fakeColor, fakeCompany, fakeDate, fakeDepartment, fakeEmail, fakeFirstName, fakeFloat, fakeFullName, fakeInt, fakeJobTitle, fakeLastName, fakeLorem, fakeName, fakeParagraph, fakePhone, fakeSentence, fakeStreet, fakeUrl, fakeUUID, fakeFromSchema, seedRandom } from './mock/index.js'
+// ─── diff (text & object diff) ───────────────────────────
+export { objectDiff, patch, textDiff, unifiedDiff, type DiffChunk, type ObjectDiffResult } from './diff/index.js'
+// ─── queue (job queue & scheduling) ──────────────────────
+export { Debouncer, JobQueue, cron, scheduleEvery } from './queue/index.js'
+export type { Job, JobQueueOptions } from './queue/index.js'
+// ─── intl (internationalization) ─────────────────────────
+export { createTranslator, formatCurrency, formatList, formatNumber, formatRelativeTime, pluralize, timeAgo } from './intl/index.js'
+// ─── cli (CLI building blocks) ───────────────────────────
+export { Spinner, renderTable, colorize, confirm, parseArgs, prompt, type ArgOption, type ArgSpec, type ParsedArgs, type TableColumn, type TableOptions } from './cli/index.js'
+// ─── geo (geospatial utilities) ──────────────────────────
+export { boundingBox, decodeGeohash, geohash, haversineDistance, isPointInPolygon, midpoint, toDMS, type Coord } from './geo/index.js'
+// ─── units (unit conversion) ─────────────────────────────
+export { UNIT_CATEGORIES, convert, convertWithCategory, getUnitCategory, isConvertible } from './units/index.js'
+// ─── http (HTTP client) ────────────────────────────────────
+export { HttpError, createHttpClient, type HttpClient, type HttpClientOptions, type HttpResponse, type Interceptor, type RateLimitMiddlewareOptions } from './http/index.js'
+// ─── security (sanitization & hardening) ───────────────────
+export { createRateLimiter, csrfToken, detectSecrets, maskPII, sanitizeHtml, verifyCsrfToken, type SecretMatch } from './security/index.js'
+// ─── config (layered configuration) ────────────────────────
+export { cliSource, envSource, fileSource, loadConfig, maskSecrets, watchConfig } from './config/index.js'
+export type { ConfigSource, LoadConfigOptions } from './config/index.js'
+// ─── observability (metrics & tracing) ─────────────────────
+export { Counter, Gauge, Histogram, MetricsRegistry, Tracer, getCorrelationId, setCorrelationId, toOTLPJson, withCorrelationId, type Span, type SpanTreeNode } from './observability/index.js'
+// ─── realtime (WebSocket & SSE) ────────────────────────────
+export { createSSEClient, createWSClient, type SSEClient, type SSEClientOptions, type WSClient, type WSClientOptions } from './realtime/index.js'
+// ─── serialize (MessagePack, binary) ───────────────────────
+export { BufferReader, BufferWriter, decodeBase58, decodeBase62, decodeMsgPack, encodeBase58, encodeBase62, encodeMsgPack } from './serialize/index.js'
+// ─── feature-flags ─────────────────────────────────────────
+export { bucketUser, createFlagStore, hashString, type FlagDefinition, type FlagStore, type FlagStoreOptions } from './feature-flags/index.js'
+// ─── dom (browser utilities) ──────────────────────────────
+export { copyToClipboard, debounceResize, downloadFile, getViewport, isTouchDevice, lockScroll, onClickOutside, onVisible, readFileAsDataURL, readFileAsText, scrollToElement, scrollToTop, trapFocus } from './dom/index.js'

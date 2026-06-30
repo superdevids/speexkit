@@ -141,6 +141,98 @@
     "./nlarray": {
       "import": "./dist/nlarray/index.js",
       "types": "./dist/nlarray/index.d.ts"
+    },
+    "./events": {
+      "import": "./dist/events/index.js",
+      "types": "./dist/events/index.d.ts"
+    },
+    "./cache": {
+      "import": "./dist/cache/index.js",
+      "types": "./dist/cache/index.d.ts"
+    },
+    "./resilience": {
+      "import": "./dist/resilience/index.js",
+      "types": "./dist/resilience/index.d.ts"
+    },
+    "./auth": {
+      "import": "./dist/auth/index.js",
+      "types": "./dist/auth/index.d.ts"
+    },
+    "./schema": {
+      "import": "./dist/schema/index.js",
+      "types": "./dist/schema/index.d.ts"
+    },
+    "./storage": {
+      "import": "./dist/storage/index.js",
+      "types": "./dist/storage/index.d.ts"
+    },
+    "./state-machine": {
+      "import": "./dist/state-machine/index.js",
+      "types": "./dist/state-machine/index.d.ts"
+    },
+    "./structures": {
+      "import": "./dist/structures/index.js",
+      "types": "./dist/structures/index.d.ts"
+    },
+    "./mock": {
+      "import": "./dist/mock/index.js",
+      "types": "./dist/mock/index.d.ts"
+    },
+    "./diff": {
+      "import": "./dist/diff/index.js",
+      "types": "./dist/diff/index.d.ts"
+    },
+    "./queue": {
+      "import": "./dist/queue/index.js",
+      "types": "./dist/queue/index.d.ts"
+    },
+    "./intl": {
+      "import": "./dist/intl/index.js",
+      "types": "./dist/intl/index.d.ts"
+    },
+    "./cli": {
+      "import": "./dist/cli/index.js",
+      "types": "./dist/cli/index.d.ts"
+    },
+    "./geo": {
+      "import": "./dist/geo/index.js",
+      "types": "./dist/geo/index.d.ts"
+    },
+    "./units": {
+      "import": "./dist/units/index.js",
+      "types": "./dist/units/index.d.ts"
+    },
+    "./http": {
+      "import": "./dist/http/index.js",
+      "types": "./dist/http/index.d.ts"
+    },
+    "./security": {
+      "import": "./dist/security/index.js",
+      "types": "./dist/security/index.d.ts"
+    },
+    "./config": {
+      "import": "./dist/config/index.js",
+      "types": "./dist/config/index.d.ts"
+    },
+    "./observability": {
+      "import": "./dist/observability/index.js",
+      "types": "./dist/observability/index.d.ts"
+    },
+    "./realtime": {
+      "import": "./dist/realtime/index.js",
+      "types": "./dist/realtime/index.d.ts"
+    },
+    "./serialize": {
+      "import": "./dist/serialize/index.js",
+      "types": "./dist/serialize/index.d.ts"
+    },
+    "./feature-flags": {
+      "import": "./dist/feature-flags/index.js",
+      "types": "./dist/feature-flags/index.d.ts"
+    },
+    "./dom": {
+      "import": "./dist/dom/index.js",
+      "types": "./dist/dom/index.d.ts"
     }
   },
   "sideEffects": false,

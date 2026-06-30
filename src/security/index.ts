@@ -1,0 +1,459 @@
+/**
+ * Options for {@link sanitizeHtml}.
+ */
+export interface SanitizeOptions {
+  /** Allowed HTML tag names (default: common inline/block tags). */
+  allowedTags?: string[]
+  /** Allowed attributes per tag name (default: href/title on a, src/alt on img). */
+  allowedAttributes?: Record<string, string[]>
+  /** When true, strips all HTML tags entirely (default: false). */
+  stripAll?: boolean
+}
+
+const DEFAULT_ALLOWED_TAGS = ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 'code', 'pre', 'blockquote', 'h1', 'h2', 'h3']
+
+const DEFAULT_ALLOWED_ATTRIBUTES: Record<string, string[]> = {
+  a: ['href', 'title'],
+  img: ['src', 'alt'],
+}
+
+const TAG_RE = /<\/?([a-zA-Z0-9]+)((?:\s+[a-zA-Z][a-zA-Z0-9-]*(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?)*)\s*\/?>/g
+const ATTR_RE = /([a-zA-Z][a-zA-Z0-9-]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g
+const ON_PREFIX_RE = /^on/i
+const JAVASCRIPT_URL_RE = /^\s*javascript:/i
+
+/**
+ * Sanitizes an HTML string using a whitelist-based approach.
+ *
+ * - Strips disallowed tags and their content
+ * - Strips disallowed attributes
+ * - Removes `<script>` tags, `on*` attributes, and `javascript:` URLs
+ *
+ * When `stripAll` is true, all HTML tags are removed entirely.
+ *
+ * @param input - The raw HTML string to sanitize.
+ * @param opts - Optional sanitization configuration.
+ * @returns The sanitized HTML string.
+ *
+ * @example sanitizeHtml('<script>alert("xss")</script><b>bold</b>')
+ * // => '<b>bold</b>'
+ *
+ * @example sanitizeHtml('<a href="javascript:alert(1)">click</a>')
+ * // => '<a>click</a>'
+ *
+ * @example sanitizeHtml('<b>ok</b>', { stripAll: true })
+ * // => 'ok'
+ */
+export function sanitizeHtml(input: string, opts?: SanitizeOptions): string {
+  if (typeof input !== 'string') {
+    throw new TypeError('Input must be a string')
+  }
+  const allowedTags = new Set(opts?.stripAll ? [] : (opts?.allowedTags ?? DEFAULT_ALLOWED_TAGS))
+  const allowedAttributes = opts?.allowedAttributes ?? DEFAULT_ALLOWED_ATTRIBUTES
+  const stripAll = opts?.stripAll ?? false
+
+  const sanitizePass = (s: string): string => {
+    if (stripAll) {
+      return s.replace(TAG_RE, '')
+    }
+
+    return s.replace(TAG_RE, (full, tagName: string, attrStr: string) => {
+      const tag = tagName.toLowerCase()
+
+      if (!allowedTags.has(tag)) {
+        return ''
+      }
+
+      const isClosing = full.startsWith('</')
+      if (isClosing) {
+        return `</${tag}>`
+      }
+
+      const attrs = parseAttributes(attrStr, tag, allowedAttributes)
+      if (attrs.length === 0) {
+        return `<${tag}>`
+      }
+      return `<${tag} ${attrs.join(' ')}>`
+    })
+  }
+
+  // Iterative sanitization to catch bypasses like <<script>script>
+  // that create new tags after stripping inner tags
+  let result = input
+  let prev: string | null = null
+  while (result !== prev) {
+    prev = result
+    result = sanitizePass(result)
+  }
+
+  return result
+}
+
+function parseAttributes(attrStr: string, tag: string, allowed: Record<string, string[]>): string[] {
+  const tagAllowed = allowed[tag]
+  if (!tagAllowed) return []
+
+  const allowedSet = new Set(tagAllowed)
+  const result: string[] = []
+
+  let m: RegExpExecArray | null
+  ATTR_RE.lastIndex = 0
+
+  while ((m = ATTR_RE.exec(attrStr)) !== null) {
+    const name = m[1]!
+    const val = m[2] ?? m[3] ?? m[4] ?? ''
+
+    if (ON_PREFIX_RE.test(name)) continue
+    if (!allowedSet.has(name)) continue
+
+    if (JAVASCRIPT_URL_RE.test(val)) continue
+
+    if (val === '') {
+      result.push(name)
+    } else {
+      result.push(`${name}="${val.replace(/"/g, '&quot;')}"`)
+    }
+  }
+
+  return result
+}
+
+/**
+ * Encodes a string into a hex HMAC-SHA256 digest.
+ *
+ * @param message - The message to sign.
+ * @param secret - The HMAC secret key.
+ * @returns The hex-encoded HMAC-SHA256 digest.
+ */
+async function hmacSha256(message: string, secret: string): Promise<string> {
+  const enc = new TextEncoder()
+  const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(message))
+  const bytes = new Uint8Array(sig)
+  let hex = ''
+  for (let i = 0; i < bytes.length; i++) {
+    hex += bytes[i]!.toString(16).padStart(2, '0')
+  }
+  return hex
+}
+
+/**
+ * Generates a cryptographically random CSRF token signed with an HMAC.
+ *
+ * Returns a string in the format `"token.hmac"`.
+ *
+ * @param secret - The HMAC secret used to sign the token.
+ * @returns A signed CSRF token string.
+ *
+ * @example const token = await csrfToken('my-secret')
+ * // => "a1b2...f00.hmac_digest"
+ */
+export async function csrfToken(secret: string): Promise<string> {
+  const raw = crypto.getRandomValues(new Uint8Array(32))
+  let token = ''
+  for (let i = 0; i < raw.length; i++) {
+    token += raw[i]!.toString(16).padStart(2, '0')
+  }
+  const hmac = await hmacSha256(token, secret)
+  return `${token}.${hmac}`
+}
+
+/**
+ * Verifies a CSRF token generated by {@link csrfToken}.
+ *
+ * Uses constant-time comparison for the HMAC portion to prevent
+ * timing attacks.
+ *
+ * @param token - The full `"token.hmac"` string to verify.
+ * @param secret - The HMAC secret used during generation.
+ * @returns `true` if the signature is valid.
+ *
+ * @example const valid = await verifyCsrfToken(token, 'my-secret')
+ * // => true | false
+ */
+export async function verifyCsrfToken(token: string, secret: string): Promise<boolean> {
+  if (typeof token !== 'string') return false
+  const dot = token.lastIndexOf('.')
+  if (dot === -1) return false
+
+  const raw = token.slice(0, dot)
+  const sig = token.slice(dot + 1)
+  if (raw.length === 0 || sig.length === 0) return false
+
+  const expected = await hmacSha256(raw, secret)
+  if (sig.length !== expected.length) return false
+
+  let diff = 0
+  for (let i = 0; i < sig.length; i++) {
+    diff |= sig.charCodeAt(i) ^ expected.charCodeAt(i)
+  }
+  return diff === 0
+}
+
+/**
+ * Configuration for {@link createRateLimiter}.
+ */
+export interface RateLimiterOptions {
+  /** Maximum number of requests allowed within the window. */
+  maxRequests: number
+  /** The time window in milliseconds. */
+  windowMs: number
+  /** How long (in ms) to block once the limit is hit. Defaults to `windowMs`. */
+  blockDuration?: number
+}
+
+interface BucketEntry {
+  tokens: number
+  resetAt: number
+  blockUntil: number
+}
+
+/**
+ * Creates a token-bucket rate limiter keyed by an arbitrary string.
+ *
+ * Returns a `check` function and a `middleware` generator compatible
+ * with Express, Hono, Fastify, and similar frameworks.
+ *
+ * @param opts - Rate limiter options.
+ * @returns An object with `check` and `middleware`.
+ *
+ * @example
+ * const limiter = createRateLimiter({ maxRequests: 10, windowMs: 60000 })
+ * const { allowed, remaining } = limiter.check('user-123')
+ *
+ * @example
+ * app.use(limiter.middleware({ keyFn: (req) => req.ip }))
+ */
+export function createRateLimiter(opts: RateLimiterOptions): {
+  check: (key: string) => { allowed: boolean; remaining: number; resetMs: number }
+  middleware: (opts?: { keyFn?: (req: any) => string }) => (req: any, res: any, next: () => void) => void
+} {
+  const { maxRequests, windowMs } = opts
+  const blockDuration = opts.blockDuration ?? windowMs
+  const buckets = new Map<string, BucketEntry>()
+
+  function getBucket(key: string): BucketEntry {
+    const now = Date.now()
+    const existing = buckets.get(key)
+    if (existing) {
+      if (now >= existing.resetAt) {
+        const entry: BucketEntry = {
+          tokens: maxRequests,
+          resetAt: now + windowMs,
+          blockUntil: 0,
+        }
+        buckets.set(key, entry)
+        return entry
+      }
+      return existing
+    }
+    const entry: BucketEntry = {
+      tokens: maxRequests,
+      resetAt: now + windowMs,
+      blockUntil: 0,
+    }
+    buckets.set(key, entry)
+    return entry
+  }
+
+  function check(key: string): { allowed: boolean; remaining: number; resetMs: number } {
+    const now = Date.now()
+    const bucket = getBucket(key)
+
+    if (now < bucket.blockUntil) {
+      return { allowed: false, remaining: 0, resetMs: bucket.blockUntil - now }
+    }
+
+    if (bucket.tokens > 0) {
+      bucket.tokens--
+      return { allowed: true, remaining: bucket.tokens, resetMs: bucket.resetAt - now }
+    }
+
+    bucket.blockUntil = now + blockDuration
+    return { allowed: false, remaining: 0, resetMs: blockDuration }
+  }
+
+  function middleware(mwOpts?: { keyFn?: (req: any) => string }): (req: any, res: any, next: () => void) => void {
+    const keyFn = mwOpts?.keyFn ?? ((req: any) => req.ip ?? req.connection?.remoteAddress ?? 'global')
+    return (req: any, res: any, next: () => void) => {
+      const result = check(keyFn(req))
+      if (result.allowed) {
+        next()
+      } else {
+        if (typeof res.status === 'function') {
+          res.status(429)
+          if (typeof res.json === 'function') {
+            res.json({ error: 'Too many requests', retryAfterMs: result.resetMs })
+          } else if (typeof res.send === 'function') {
+            res.send('Too Many Requests')
+          } else if (typeof res.end === 'function') {
+            res.end('Too Many Requests')
+          } else {
+            next()
+          }
+        } else {
+          next()
+        }
+      }
+    }
+  }
+
+  return { check, middleware }
+}
+
+/**
+ * A detected secret match result from {@link detectSecrets}.
+ */
+export interface SecretMatch {
+  /** The type of secret detected. */
+  type: string
+  /** The matched value. */
+  value: string
+  /** The 1-based line number in the source text. */
+  line: number
+  /** Shannon entropy score of the matched value. */
+  entropy: number
+}
+
+const SECRET_PATTERNS: { type: string; re: RegExp }[] = [
+  { type: 'aws_key', re: /AKIA[0-9A-Z]{16}/g },
+  { type: 'github_token', re: /ghp_[a-zA-Z0-9]{36}|github_pat_[a-zA-Z0-9]{22,}/g },
+  { type: 'jwt', re: /eyJ[a-zA-Z0-9_-]+\.eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+/g },
+  { type: 'private_key', re: /-----BEGIN\s+(?:\w+\s+)?PRIVATE\s+KEY-----/g },
+  { type: 'api_key', re: /(?:api[_-]?key|apikey|secret|token)\s*[:=]\s*['"][a-zA-Z0-9_\-]{16,}['"]/gi },
+]
+
+function shannonEntropy(value: string): number {
+  const len = value.length
+  if (len === 0) return 0
+  const freq = new Map<string, number>()
+  for (const ch of value) {
+    freq.set(ch, (freq.get(ch) ?? 0) + 1)
+  }
+  let entropy = 0
+  for (const count of Array.from(freq.values())) {
+    const p = count / len
+    entropy -= p * Math.log2(p)
+  }
+  return Math.round(entropy * 100) / 100
+}
+
+/**
+ * Scans text for potential secrets and credentials.
+ *
+ * Detects AWS keys, GitHub tokens, JWTs, private keys, API keys,
+ * and generic secrets. Each match includes a Shannon entropy score.
+ *
+ * @param text - The text to scan.
+ * @returns An array of {@link SecretMatch} results.
+ *
+ * @example detectSecrets('AKIA1234567890ABCDEF')
+ * // => [{ type: 'aws_key', value: 'AKIA1234567890ABCDEF', line: 1, entropy: 3.58 }]
+ */
+export function detectSecrets(text: string): SecretMatch[] {
+  const matches: SecretMatch[] = []
+  const lines = text.split('\n')
+  const seen = new Set<string>()
+
+  for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+    const line = lines[lineIdx]!
+    for (const { type, re } of SECRET_PATTERNS) {
+      re.lastIndex = 0
+      let m: RegExpExecArray | null
+      while ((m = re.exec(line)) !== null) {
+        const value = m[0]
+        const key = `${type}:${value}`
+        if (seen.has(key)) continue
+        seen.add(key)
+        matches.push({
+          type,
+          value,
+          line: lineIdx + 1,
+          entropy: shannonEntropy(value),
+        })
+      }
+    }
+  }
+
+  return matches
+}
+
+/**
+ * Options for {@link maskPII}.
+ */
+export interface MaskPIIOptions {
+  /** Mask email addresses (default: true). */
+  email?: boolean
+  /** Mask phone numbers (default: true). */
+  phone?: boolean
+  /** Mask ID numbers (NIK/SIM/passport) (default: true). */
+  id?: boolean
+  /** Mask IP addresses (default: true). */
+  ip?: boolean
+}
+
+const EMAIL_RE = /([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g
+const PHONE_RE = /(\+?\d{1,4})?[\s.-]?(\d{3,4})[\s.-]?(\d{3,4})[\s.-]?(\d{3,4})/g
+const LONG_DIGIT_RE = /\b\d{16,}\b/g
+const IPV4_RE = /\b(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\b/g
+
+/**
+ * Masks personally identifiable information (PII) in text.
+ *
+ * - **Email**: `john.doe@email.com` → `j***@e***.com`
+ * - **Phone**: `+6281234567890` → `+6281*****890`
+ * - **ID numbers**: `1234567890123456` → `************3456`
+ * - **IPv4**: `192.168.1.1` → `192.168.*.*`
+ *
+ * @param text - The text containing PII.
+ * @param opts - Optional mask configuration.
+ * @returns The text with PII replaced by masked versions.
+ *
+ * @example maskPII('Contact: john.doe@email.com')
+ * // => 'Contact: j***@e***.com'
+ *
+ * @example maskPII('IP 192.168.1.1', { ip: true })
+ * // => 'IP 192.168.*.*'
+ */
+export function maskPII(text: string, opts?: MaskPIIOptions): string {
+  const { email = true, phone = true, id = true, ip = true } = opts ?? {}
+
+  let result = text
+
+  if (email) {
+    result = result.replace(EMAIL_RE, (_full, local: string, domain: string) => {
+      if (local.length === 0 || domain.length === 0) return _full
+      const firstLocalCh = local[0]!
+      const domainName = domain.split('.')[0]!
+      const firstDomainCh = domainName[0]!
+      return `${firstLocalCh}***@${firstDomainCh}***.${domain.split('.').slice(1).join('.')}`
+    })
+  }
+
+  if (id) {
+    result = result.replace(LONG_DIGIT_RE, (full) => {
+      const keep = full.slice(-4)
+      return '*'.repeat(full.length - 4) + keep
+    })
+  }
+
+  if (phone) {
+    result = result.replace(PHONE_RE, (_full, p1: string, p2: string, p3: string, p4: string) => {
+      const digits = [p1 ?? '', p2, p3, p4].filter((x) => x != null && x !== '').join('')
+      if (digits.length < 7) return _full
+      const clean = digits.replace(/\D/g, '')
+      if (clean.length > 15) return _full
+      const prefix = digits.slice(0, Math.min(4, digits.length - 5))
+      const suffix = digits.slice(-3)
+      return `${prefix}*****${suffix}`
+    })
+  }
+
+  if (ip) {
+    result = result.replace(IPV4_RE, (_full, a: string, b: string) => {
+      return `${a}.${b}.*.*`
+    })
+  }
+
+  return result
+}

@@ -1,3 +1,7 @@
+import { readFile, writeFile, mkdir } from 'node:fs/promises'
+import { watch } from 'node:fs'
+import { dirname } from 'node:path'
+
 /**
  * Options for CSV parsing.
  */
@@ -161,5 +165,77 @@ export function safeJsonStringify(value: unknown, default_?: string): string {
     return r !== undefined ? r : (default_ ?? '')
   } catch {
     return default_ ?? ''
+  }
+}
+
+/**
+ * Reads and parses a JSON file from disk.
+ *
+ * @param path - File path to read
+ * @returns Parsed JSON value
+ */
+export async function readJSONFile<T = unknown>(path: string): Promise<T> {
+  let content: string
+  try {
+    content = await readFile(path, 'utf-8')
+  } catch (err) {
+    const nodeErr = err as NodeJS.ErrnoException
+    if (nodeErr.code === 'ENOENT') {
+      throw new Error(`File not found: ${path}`)
+    }
+    throw new Error(`Failed to read file: ${path} — ${(err as Error).message}`)
+  }
+  try {
+    return JSON.parse(content) as T
+  } catch {
+    throw new Error(`Invalid JSON in file: ${path}`)
+  }
+}
+
+/**
+ * Stringifies data as JSON and writes it to a file, creating the parent
+ * directory if it does not exist.
+ *
+ * @param path - File path to write
+ * @param data - Data to serialize
+ * @param opts - Optional formatting options
+ */
+export async function writeJSONFile(
+  path: string,
+  data: unknown,
+  opts?: { spaces?: number; replacer?: (key: string, value: unknown) => unknown },
+): Promise<void> {
+  await mkdir(dirname(path), { recursive: true })
+  const json = JSON.stringify(data, opts?.replacer as ((key: string, value: unknown) => unknown) | undefined, opts?.spaces)
+  await writeFile(path, json, 'utf-8')
+}
+
+/**
+ * Watches a file for changes using `fs.watch`.
+ *
+ * Returns an object with a `stop()` method to stop watching.
+ *
+ * @param path - File path to watch
+ * @param onChange - Callback invoked with the event type
+ */
+export function watchFile(
+  path: string,
+  onChange: (event: 'change' | 'rename') => void,
+): { stop(): void } {
+  let timer: ReturnType<typeof setTimeout> | null = null
+
+  const watcher = watch(path, (event) => {
+    if (event !== 'change' && event !== 'rename') return
+    if (timer) clearTimeout(timer)
+    timer = setTimeout(() => {
+      onChange(event)
+      timer = null
+    }, 100)
+  })
+
+  return {
+    stop(): void {
+      watcher.close()
+    },
   }
 }

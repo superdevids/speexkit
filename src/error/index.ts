@@ -1,3 +1,5 @@
 export type { ErrorCode, ErrorCodeMap } from './createError.js'
 export { createError, isTypedError, TypedError } from './createError.js'
 export { collectErrors, MultiError } from './MultiError.js'
+export type { OkImpl, ErrImpl, Result } from './Result.js'
+export { Ok, Err, ok, err } from './Result.js'

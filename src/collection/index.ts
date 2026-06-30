@@ -1033,3 +1033,80 @@ export function fromKeys<K extends string, V>(keys: K[], value: V | ((key: K, in
   }
   return result
 }
+
+/**
+ * Paginates an array with 1-indexed page numbers.
+ *
+ * @param array - The source array.
+ * @param page - Page number (1-indexed). Clamped to valid range.
+ * @param size - Items per page (default 10).
+ * @returns An object with paginated data and metadata.
+ *
+ * @example paginate([1, 2, 3, 4, 5], 1, 2)
+ *          // => { data: [1, 2], total: 5, page: 1, size: 2, totalPages: 3, hasNext: true, hasPrev: false }
+ */
+export function paginate<T>(array: T[], page: number = 1, size: number = 10): {
+  data: T[]
+  total: number
+  page: number
+  size: number
+  totalPages: number
+  hasNext: boolean
+  hasPrev: boolean
+} {
+  const total = array.length
+  const totalPages = size > 0 ? Math.ceil(total / size) : 1
+  const clampedPage = Math.max(1, Math.min(page, totalPages))
+  const start = (clampedPage - 1) * size
+  const data = size > 0 ? array.slice(start, start + size) : []
+  return {
+    data,
+    total,
+    page: clampedPage,
+    size,
+    totalPages,
+    hasNext: clampedPage < totalPages,
+    hasPrev: clampedPage > 1,
+  }
+}
+
+/**
+ * Rotates an array by n positions. Positive n rotates right, negative rotates left.
+ * Does not mutate the original array.
+ *
+ * @param array - The source array.
+ * @param n - Number of positions to rotate.
+ * @returns A new rotated array.
+ *
+ * @example rotate([1, 2, 3, 4], 1)
+ *          // => [4, 1, 2, 3]
+ * @example rotate([1, 2, 3, 4], -1)
+ *          // => [2, 3, 4, 1]
+ */
+export function rotate<T>(array: T[], n: number): T[] {
+  if (array.length === 0) return []
+  const len = array.length
+  const offset = ((n % len) + len) % len
+  return [...array.slice(len - offset), ...array.slice(0, len - offset)]
+}
+
+/**
+ * Transposes a matrix (array of arrays), swapping rows and columns.
+ * Throws if rows have different lengths.
+ *
+ * @param matrix - The matrix to transpose.
+ * @returns A new transposed matrix.
+ *
+ * @example transpose([[1, 2], [3, 4]])
+ *          // => [[1, 3], [2, 4]]
+ */
+export function transpose<T>(matrix: T[][]): T[][] {
+  if (matrix.length === 0) return []
+  const rowLen = matrix[0]!.length
+  for (let i = 1; i < matrix.length; i++) {
+    if (matrix[i]!.length !== rowLen) {
+      throw new Error('All rows must have the same length')
+    }
+  }
+  return matrix[0]!.map((_, colIndex) => matrix.map((row) => row[colIndex]!))
+}

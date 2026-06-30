@@ -1,8 +1,8 @@
 # Product Requirements Document — SpeexKit
 
-> **Version:** 1.0 (PRD)
+> **Version:** 1.1 (PRD)
 > **Status:** Draft
-> **Last Updated:** 2026-06-29
+> **Last Updated:** 2026-06-30
 > **Document Owner:** SpeexKit Core Team
 
 ---
@@ -32,20 +32,20 @@ SpeexKit aims to be the single most comprehensive zero-dependency TypeScript uti
 
 ### 1.2 One-Line Pitch
 
-> SpeexKit is a **zero-dependency TypeScript toolkit** delivering **400+ functions** across **20 modules** — from NDArray (NumPy-style) and ML (scikit-learn-style) to validation, async concurrency, functional programming, color manipulation, cryptography, and dependency scanning — all **tree-shakeable, type-safe, and free of external dependencies**.
+> SpeexKit is a **zero-dependency TypeScript toolkit** delivering **500+ functions** across **46 modules** — from NDArray (NumPy-style) and ML (scikit-learn-style) to validation, async concurrency, functional programming, color manipulation, cryptography, dependency scanning, config management, caching, CLI tools, circuit breakers, HTML sanitization, DOM helpers, event emitters, state machines, and more — all **tree-shakeable, type-safe, and free of external dependencies**.
 
 ### 1.3 Current State (v1.4.12)
 
 | Metric | Value |
 |--------|-------|
-| Bundle Size | ~200 KB (25 KB gzipped) |
+| Bundle Size | ~400 KB (28 KB gzipped) |
 | Runtime Dependencies | **Zero** |
-| Modules | **20** |
-| Exported Functions | **400+** |
-| Tests | **1,503** across 25 test files |
+| Modules | **46** |
+| Exported Functions | **500+** |
+| Tests | **2,544** across 46 test files |
 | TypeScript | Strict mode, **0 errors** |
 | CLI Tools | `dep-exray` (dependency scanner) |
-| Build | ESM-only, 33 entry points, tree-shakeable |
+| Build | ESM + CJS, 56 entry points, tree-shakeable |
 | License | MIT |
 
 ### 1.4 Strategic Positioning
@@ -149,67 +149,81 @@ No other library combines **zero dependencies** with **400+ functions spanning N
 
 ## 4. Feature Taxonomy
 
-### 4.1 Existing Modules (v1.4.12)
+### 4.1 Existing Modules (v1.4.14)
 
 | # | Module | Functions | Status | Priority |
 |---|--------|-----------|--------|----------|
 | 1 | **core** | 12 | ✅ Stable | P0 |
 | 2 | **math** | 35 | ✅ Stable | P0 |
-| 3 | **date** | 55 | ✅ Stable | P0 |
-| 4 | **string** | 47 | ✅ Stable | P0 |
+| 3 | **date** | 55+ | ✅ Stable | P0 |
+| 4 | **string** | 47+ | ✅ Stable | P0 |
 | 5 | **async** | 19 | ✅ Stable | P0 |
-| 6 | **validation** | 21 | ✅ Stable | P0 |
-| 7 | **collection** | 62 | ✅ Stable | P0 |
+| 6 | **validation** | 28 | ✅ Stable | P0 |
+| 7 | **collection** | 62+ | ✅ Stable | P0 |
 | 8 | **type** | 28 | ✅ Stable | P0 |
-| 9 | **crypto** | 10 | ✅ Stable | P0 |
+| 9 | **crypto** | 12 | ✅ Stable | P0 |
 | 10 | **path** | 10 | ✅ Stable | P0 |
 | 11 | **color** | 21 | ✅ Stable | P0 |
-| 12 | **error** | 5 | ✅ Stable | P0 |
+| 12 | **error** | 6 | ✅ Stable | P0 |
 | 13 | **logger** | 6 | ✅ Stable | P0 |
-| 14 | **io** | 6 | ✅ Stable | P0 |
-| 15 | **nlfunction** | 25 | ✅ Stable | P0 |
+| 14 | **io** | 9 | ✅ Stable | P0 |
+| 15 | **nlfunction** | 26 | ✅ Stable | P0 |
 | 16 | **nlarray** | 55+ | ✅ Stable | P0 |
 | 17 | **ml** | 15 | ✅ Stable | P1 |
 | 18 | **stats** | 13 | ✅ Stable | P1 |
 | 19 | **viz-data** | 7 | ✅ Stable | P1 |
 | 20 | **dep-exray** | 5 + CLI | ✅ Stable | P1 |
+| 21 | **config** | 6 | ✅ Stable | P1 |
+| 22 | **cache** | 3 | ✅ Stable | P1 |
+| 23 | **cli** | 5 | ✅ Stable | P1 |
+| 24 | **queue** | 3 | ✅ Stable | P1 |
+| 25 | **resilience** | 5 | ✅ Stable | P1 |
+| 26 | **security** | 5 | ✅ Stable | P1 |
+| 27 | **dom** | 13 | ✅ Stable | P1 |
+| 28 | **events** | 1 | ✅ Stable | P1 |
+| 29 | **intl** | 5 | ✅ Stable | P1 |
+| 30 | **observability** | 10+ | ✅ Stable | P2 |
+| 31 | **state-machine** | 1 | ✅ Stable | P1 |
+| 32 | **realtime** | 2 | ✅ Stable | P2 |
+| 33 | **feature-flags** | 3 | ✅ Stable | P2 |
+| 34 | **reporter** | 2 | ✅ Stable | P2 |
+| 35 | **schema** | 1 | ✅ Stable | P2 |
+| 36 | **mock** | 10+ | ✅ Stable | P2 |
+| 37 | **units** | 5 | ✅ Stable | P2 |
+| 38 | **geo** | 7 | ✅ Stable | P2 |
+| 39 | **diff** | 5 | ✅ Stable | P2 |
+| 40 | **storage** | 1 | ✅ Stable | P2 |
+| 41 | **auth** | 6 | ✅ Stable | P2 |
+| 42 | **http** | 3 | ✅ Stable | P2 |
+| 43 | **serialize** | 6 | ✅ Stable | P2 |
+| 44 | **expansion** | 3 | ✅ Stable | P2 |
+| 45 | **coverage-boost** | — | ✅ Stable | P2 |
+| 46 | **analyzer/scanner** | — | ✅ Stable | P2 |
 
 ### 4.2 Future Feature Pipeline
 
 | Category | Feature | Priority | Target Version |
 |----------|---------|----------|----------------|
-| **ML** | KNN Classifier | P1 | v1.5.0 |
-| **ML** | PCA (Dimensionality Reduction) | P1 | v1.5.0 |
-| **ML** | Logistic Regression | P1 | v1.5.0 |
-| **ML** | Decision Tree / Random Forest | P2 | v1.7.0 |
-| **ML** | DBSCAN Clustering | P2 | v1.7.0 |
-| **ML** | OneHotEncoder, LabelEncoder | P2 | v1.5.0 |
-| **ML** | Train/test cross-validation | P2 | v1.5.0 |
-| **Reactive** | signal, computed, effect | P1 | v1.6.0 |
-| **IO** | Streaming CSV/JSONL parser | P1 | v1.6.0 |
-| **IO** | XLSX basic reader | P3 | v2.0.0 |
-| **Crypto** | AES-GCM encrypt/decrypt | P1 | v1.6.0 |
-| **Crypto** | RSA keygen + sign/verify | P2 | v2.0.0 |
-| **NDArray** | SVD decomposition | P1 | v1.6.0 |
-| **NDArray** | FFT | P2 | v1.7.0 |
-| **NDArray** | Sparse matrix support | P3 | v2.0.0 |
-| **NDArray** | GPU.js backend acceleration | P4 | v3.0.0 |
-| **Stats** | ANOVA test | P2 | v1.6.0 |
-| **Stats** | Chi-square test | P2 | v1.6.0 |
-| **Stats** | Mann-Whitney U test | P2 | v1.7.0 |
-| **Viz** | SVG chart generators | P2 | v1.7.0 |
-| **Viz** | ASCII table/sparkline | P3 | v2.0.0 |
-| **Validation** | 10 additional validators | P2 | v1.6.0 |
-| **Validation** | Zod-compatible schema inference | P3 | v2.0.0 |
-| **Functional** | Monad (Maybe, Either, Result) | P2 | v1.7.0 |
-| **Functional** | Pattern matching | P3 | v2.0.0 |
-| **String** | Template engine (mustache-like) | P2 | v1.6.0 |
-| **String** | Markdown-to-text parser | P3 | v2.0.0 |
-| **Dep-exray** | VS Code extension diagnostics | P2 | v1.6.0 |
-| **Dep-exray** | Bundle size analyzer mode | P2 | v1.7.0 |
-| **Dep-exray** | Auto-fix suggestions with PR | P3 | v2.0.0 |
-| **Collection** | DataFrame (pandas-like) | P3 | v2.0.0 |
-| **Collection** | Observable (RxJS-like) | P4 | v3.0.0 |
+| **ML** | KNN Classifier | P1 | v1.4.13 | ✅ Done |
+| **ML** | PCA (Dimensionality Reduction) | P1 | v1.5.0 | |
+| **ML** | Logistic Regression | P1 | v1.5.0 | |
+| **ML** | Decision Tree / Random Forest | P2 | v1.7.0 | |
+| **ML** | DBSCAN Clustering | P2 | v1.7.0 | |
+| **ML** | LabelEncoder | P2 | v1.4.13 | ✅ Done |
+| **ML** | Train/test cross-validation | P2 | v1.5.0 | |
+| **Reactive** | signal, computed, effect | P1 | v1.6.0 | |
+| **IO** | Streaming CSV/JSONL parser | P1 | v1.6.0 | |
+| **Crypto** | AES-GCM encrypt/decrypt | P1 | v1.6.0 | |
+| **Crypto** | SHA-256 / SHA-512 | P1 | v1.4.14 | ✅ Done |
+| **NDArray** | SVD decomposition | P1 | v1.6.0 | |
+| **NDArray** | FFT | P2 | v1.7.0 | |
+| **Validation** | 7 additional validators (isCronExpression, isIBAN, isISBN, isJWT, isLatLng, isMACAddress, isSemVer) | P2 | v1.4.14 | ✅ Done |
+| **Validation** | Zod-compatible schema inference | P3 | v1.4.14 | ✅ Done |
+| **Functional** | Result&lt;T,E&gt; (Ok/Err) | P2 | v1.4.14 | ✅ Done |
+| **String** | wrap, highlightMatches, diacriticsRemove, toTitleCase | P2 | v1.4.14 | ✅ Done |
+| **Collection** | paginate, rotate, transpose | P2 | v1.4.14 | ✅ Done |
+| **Date** | humanizeDuration, getHolidays | P2 | v1.4.14 | ✅ Done |
+| **IO** | readJSONFile, writeJSONFile, watchFile | P2 | v1.4.14 | ✅ Done |
 
 ---
 
@@ -217,26 +231,48 @@ No other library combines **zero dependencies** with **400+ functions spanning N
 
 ### v1.4.x — Foundation (Current)
 
-**Theme:** Stabilize and harden all 20 modules.
+**Theme:** Stabilize and harden all 46 modules.
 
 | Feature | Priority | Status |
 |---------|----------|--------|
-| 20 modules, 400+ exports | P0 | ✅ Done |
+| 46 modules, 500+ exports | P0 | ✅ Done |
 | Zero dependencies | P0 | ✅ Done |
-| 1,503 tests (25 test files) | P0 | ✅ Done |
+| 2,544 tests (46 test files) | P0 | ✅ Done |
 | NDArray with broadcasting/matmul | P0 | ✅ Done |
-| ML: StandardScaler, LinearRegression, KMeans | P1 | ✅ Done |
+| ML: StandardScaler, LinearRegression, KMeans, KNN, LabelEncoder | P1 | ✅ Done |
 | Stats: normalPDF, ttestInd, pearson, spearman | P1 | ✅ Done |
 | Viz-data: histogram, kde, boxPlot, ecdf | P1 | ✅ Done |
 | dep-exray CLI | P1 | ✅ Done |
 | Brutal testing (10 phases, 0 failures) | P1 | ✅ Done |
 | TypeScript strict, 0 errors | P0 | ✅ Done |
+| Config management | P1 | ✅ Done |
+| Cache (LRU/LFU/TTL) | P1 | ✅ Done |
+| CLI toolkit (table, spinner, prompts) | P1 | ✅ Done |
+| Queue (scheduler, debouncer, cron) | P1 | ✅ Done |
+| Resilience (CircuitBreaker, Bulkhead, Retry) | P1 | ✅ Done |
+| Security (sanitizeHtml, hashing, secrets scan) | P1 | ✅ Done |
+| DOM helpers | P1 | ✅ Done |
+| Events (EventEmitter) | P1 | ✅ Done |
+| i18n (formatCurrency, formatRelativeTime) | P1 | ✅ Done |
+| State Machine | P1 | ✅ Done |
+| Schema validation (Zod-lite) | P2 | ✅ Done |
+| Mock (fakers, spies, clock) | P2 | ✅ Done |
+| Geo (haversine, geohash) | P2 | ✅ Done |
+| Diff (text, object, patch) | P2 | ✅ Done |
+| Units conversion | P2 | ✅ Done |
+| Realtime (WebSocket, SSE) | P2 | ✅ Done |
+| Feature flags | P2 | ✅ Done |
+| Observability (metrics, tracing) | P2 | ✅ Done |
+| Auth (JWT, PKCE) | P2 | ✅ Done |
+| HTTP client | P2 | ✅ Done |
+| Serialization (MsgPack, base58/62) | P2 | ✅ Done |
+| ESM + CJS dual build, 56 entry points | P0 | ✅ Done |
 
 **Goals:**
-- [x] All 20 modules fully functional
+- [x] All 46 modules fully functional
 - [x] Zero regression risk
 - [x] Documented API surface
-- [x] 1,503+ tests passing
+- [x] 2,544+ tests passing
 
 ---
 
@@ -249,8 +285,9 @@ No other library combines **zero dependencies** with **400+ functions spanning N
 | KNN Classifier (k-nearest neighbors) | P1 | M | ✅ Done (v1.4.13) |
 | PCA (Principal Component Analysis) | P1 | L | |
 | Logistic Regression | P1 | M | |
-| OneHotEncoder / LabelEncoder | P2 | S | ⚠️ LabelEncoder done (v1.4.13) |
-| trainTestSplit — stratified sampling | P2 | S |
+| OneHotEncoder | P2 | S | |
+| LabelEncoder | P2 | S | ✅ Done (v1.4.13) |
+| trainTestSplit — stratified sampling | P2 | S | |
 | Cross-validation (k-fold) | P2 | M |
 | ML module test coverage to > 90% | P1 | M |
 | NDArray — boolean indexing | P2 | S |
@@ -283,7 +320,8 @@ No other library combines **zero dependencies** with **400+ functions spanning N
 | Reactive signals: `signal()`, `computed()`, `effect()` | P1 | L |
 | Streaming CSV parser (node:stream based) | P1 | M |
 | AES-GCM encrypt/decrypt (using node:crypto) | P1 | S |
-| 10 additional validators (isMongoId, isSemVer, isMACAddress, etc.) | P2 | M |
+| 7 additional validators | P2 | M | ✅ Done (v1.4.14) |
+| Schema validation (Zod-lite) | P3 | M | ✅ Done (v1.4.14) |
 | ANOVA one-way test | P2 | M |
 | Chi-square test for independence | P2 | M |
 | Template engine (mustache-compatible) | P2 | M |
@@ -498,24 +536,38 @@ npm publish (dist/ only)
 | Viz data prep | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Collection ops | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
 | Async concurrency | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Validation (21+) | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ (100+) |
+| Validation (28+) | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ (100+) |
 | Date utilities | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ |
 | Color manipulation | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Crypto helpers | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Functional tools | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
 | Type guards (28) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Logger | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Config management | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Cache (LRU/LFU/TTL) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| CLI toolkit | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Circuit breaker | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| HTML sanitization | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| DOM helpers | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| EventEmitter | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| i18n / Intl | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| State machine | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Schema validation | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Mock/fake data | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Geo/haversine | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Unit conversion | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Text diff/patch | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | dep-exray CLI | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Bundle size (gzip) | ~25 KB | ~71 KB | ~2 KB | ~200 KB | ~1 KB/fn | ~59 KB |
-| ESM-first | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ |
+| Bundle size (gzip) | ~28 KB | ~71 KB | ~2 KB | ~200 KB | ~1 KB/fn | ~59 KB |
+| ESM + CJS dual | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ |
 
 ### 7.2 When to Choose SpeexKit
 
-- **You want one package for everything** — 20 modules, 400+ functions
+- **You want one package for everything** — 46 modules, 500+ functions
 - **You need NDArray or ML in JS/TS** — No other zero-dep option exists
-- **You care about bundle size** — 25 KB gzip for the full toolkit
+- **You care about bundle size** — 28 KB gzip for the full toolkit
 - **You want zero supply chain risk** — No runtime dependencies
-- **You need tree-shakeability** — ESM + sideEffects: false + 33 entry points
+- **You need tree-shakeability** — ESM + CJS + sideEffects: false + 56 entry points
 
 ### 7.3 When NOT to Choose SpeexKit
 
@@ -548,11 +600,11 @@ npm publish (dist/ only)
 
 | Version | Tests | Modules | Exports | Coverage | Target Downloads/Week |
 |---------|-------|---------|---------|----------|---------------------|
-| v1.4.x (Current) | 1,503 | 20 | 400+ | ~90% | — |
-| v1.5.0 | 1,600+ | 20 | 420+ | >90% | 500+ |
-| v1.6.0 | 1,800+ | 22 | 460+ | >92% | 1,000+ |
-| v1.7.0 | 2,000+ | 25 | 500+ | >92% | 2,000+ |
-| v2.0.0 | 2,500+ | 28 | 550+ | >93% | 5,000+ |
+| v1.4.x (Current) | 2,544 | 46 | 500+ | ~90% | — |
+| v1.5.0 | 2,700+ | 46 | 520+ | >90% | 500+ |
+| v1.6.0 | 3,000+ | 48 | 550+ | >92% | 1,000+ |
+| v1.7.0 | 3,500+ | 50 | 600+ | >92% | 2,000+ |
+| v2.0.0 | 4,000+ | 55+ | 700+ | >93% | 5,000+ |
 | v3.0.0 | 3,000+ | 30+ | 600+ | >95% | 10,000+ |
 
 ### 9.2 Quality Gates

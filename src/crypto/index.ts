@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto'
+
 /**
  * Simple hash function using the djb2 algorithm.
  * Fast, non-cryptographic — suitable for hashtables, not security.
@@ -215,4 +217,24 @@ export function constantTimeEqual(a: string, b: string): boolean {
     result |= a.charCodeAt(i) ^ b.charCodeAt(i)
   }
   return result === 0
+}
+
+/**
+ * Computes the SHA-256 hash of a string.
+ *
+ * @param input - The string to hash.
+ * @returns A 64-character hex-encoded SHA-256 string.
+ */
+export function sha256(input: string): string {
+  return createHash('sha256').update(input).digest('hex')
+}
+
+/**
+ * Computes the SHA-512 hash of a string.
+ *
+ * @param input - The string to hash.
+ * @returns A 128-character hex-encoded SHA-512 string.
+ */
+export function sha512(input: string): string {
+  return createHash('sha512').update(input).digest('hex')
 }

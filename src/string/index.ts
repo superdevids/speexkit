@@ -578,3 +578,125 @@ export function lines(str: string): string[] {
 export function chars(str: string): string[] {
   return str.split('')
 }
+
+export const STOP_WORDS = new Set([
+  'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+  'of', 'by', 'with', 'nor', 'yet', 'so', 'as', 'up', 'if', 'is', 'it',
+])
+
+/**
+ * Word-wraps text to the specified width, breaking at word boundaries.
+ *
+ * @example wrap('Hello world', 5) // ['Hello', 'world']
+ * @example wrap('Hello world', 20) // ['Hello world']
+ */
+export function wrap(text: string, width: number): string[] {
+  if (width < 1) return []
+  const lines: string[] = []
+  const words = text.split(/(\s+)/)
+  let current = ''
+  for (const word of words) {
+    if (word.trim().length === 0 && current.length > 0) {
+      current += word
+      continue
+    }
+    if (current.length + word.length > width) {
+      if (current.trim().length > 0) {
+        lines.push(current.trimEnd())
+        current = ''
+      }
+      if (word.length > width) {
+        let remaining = word
+        while (remaining.length > width) {
+          lines.push(remaining.slice(0, width))
+          remaining = remaining.slice(width)
+        }
+        current = remaining
+      } else {
+        current = word
+      }
+    } else {
+      current += word
+    }
+  }
+  if (current.trim().length > 0) lines.push(current.trimEnd())
+  return lines
+}
+
+/**
+ * Returns segments of text with matching parts highlighted.
+ *
+ * @example highlightMatches('Hello World', 'world').segments
+ * // [{ text: 'Hello ', highlighted: false }, { text: 'World', highlighted: true }]
+ */
+export function highlightMatches(text: string, query: string): { segments: Array<{ text: string; highlighted: boolean }>; plain: string } {
+  if (!query || query.length === 0) return { segments: [{ text, highlighted: false }], plain: text }
+  const lower = text.toLowerCase()
+  const qLower = query.toLowerCase()
+  const segments: Array<{ text: string; highlighted: boolean }> = []
+  let lastIndex = 0
+  let index = lower.indexOf(qLower, lastIndex)
+  while (index !== -1) {
+    if (index > lastIndex) segments.push({ text: text.slice(lastIndex, index), highlighted: false })
+    segments.push({ text: text.slice(index, index + query.length), highlighted: true })
+    lastIndex = index + query.length
+    index = lower.indexOf(qLower, lastIndex)
+  }
+  if (lastIndex < text.length) segments.push({ text: text.slice(lastIndex), highlighted: false })
+  return { segments, plain: text }
+}
+
+/**
+ * Converts a string to Title Case with stop-word awareness.
+ * Stop words are lowercased unless they are the first or last word.
+ *
+ * @example toTitleCase('the lord of the rings') // 'The Lord of the Rings'
+ * @example toTitleCase('a tale of two cities') // 'A Tale of Two Cities'
+ */
+export function toTitleCase(str: string): string {
+  const words = str.toLowerCase().split(/\s+/)
+  if (words.length === 0) return ''
+  return words
+    .map((word, i) => {
+      if (i === 0 || i === words.length - 1) return word[0]!.toUpperCase() + word.slice(1)
+      if (STOP_WORDS.has(word)) return word
+      return word[0]!.toUpperCase() + word.slice(1)
+    })
+    .join(' ')
+}
+
+const DIACRITICS_MAP: Record<string, string> = {
+  à: 'a', á: 'a', â: 'a', ã: 'a', ä: 'a', æ: 'a', å: 'a', ā: 'a', ą: 'a', ă: 'a', ǎ: 'a', ȧ: 'a',
+  À: 'A', Á: 'A', Â: 'A', Ã: 'A', Ä: 'A', Æ: 'A', Å: 'A', Ā: 'A', Ą: 'A', Ă: 'A', Ǎ: 'A',
+  ç: 'c', ć: 'c', č: 'c', ĉ: 'c', ċ: 'c',
+  Ç: 'C', Ć: 'C', Č: 'C', Ĉ: 'C', Ċ: 'C',
+  è: 'e', é: 'e', ê: 'e', ë: 'e', ē: 'e', ė: 'e', ę: 'e', ě: 'e', ĕ: 'e', ȩ: 'e',
+  È: 'E', É: 'E', Ê: 'E', Ë: 'E', Ē: 'E', Ė: 'E', Ę: 'E', Ě: 'E', Ĕ: 'E',
+  ì: 'i', í: 'i', î: 'i', ï: 'i', ī: 'i', į: 'i', ĭ: 'i', ǐ: 'i', ȋ: 'i',
+  Ì: 'I', Í: 'I', Î: 'I', Ï: 'I', Ī: 'I', Į: 'I', Ĭ: 'I',
+  ñ: 'n', ń: 'n', ň: 'n', ņ: 'n', ŉ: 'n',
+  Ñ: 'N', Ń: 'N', Ň: 'N', Ņ: 'N',
+  ò: 'o', ó: 'o', ô: 'o', õ: 'o', ö: 'o', ø: 'o', ō: 'o', ő: 'o', ǒ: 'o', ȯ: 'o', ȱ: 'o',
+  Ò: 'O', Ó: 'O', Ô: 'O', Õ: 'O', Ö: 'O', Ø: 'O', Ō: 'O', Ő: 'O', Ǒ: 'O',
+  ù: 'u', ú: 'u', û: 'u', ü: 'u', ū: 'u', ű: 'u', ų: 'u', ů: 'u', ŭ: 'u', ǔ: 'u', ȗ: 'u',
+  Ù: 'U', Ú: 'U', Û: 'U', Ü: 'U', Ū: 'U', Ű: 'U', Ų: 'U', Ů: 'U', Ŭ: 'U',
+  ý: 'y', ÿ: 'y', ŷ: 'y',
+  Ý: 'Y', Ÿ: 'Y', Ŷ: 'Y',
+  đ: 'd', ð: 'd', ď: 'd', ɗ: 'd',
+  Đ: 'D', Ð: 'D', Ď: 'D',
+  ß: 'ss',
+  þ: 'th', Þ: 'TH',
+}
+
+/**
+ * Removes diacritics (accents) from characters.
+ *
+ * @example diacriticsRemove('café') // 'cafe'
+ * @example diacriticsRemove('São Paulo') // 'Sao Paulo'
+ */
+export function diacriticsRemove(str: string): string {
+  return str
+    .split('')
+    .map((ch) => DIACRITICS_MAP[ch] ?? ch)
+    .join('')
+}

@@ -1187,3 +1187,207 @@ export function endOfWeek(date: Date, options?: { weekStartsOn?: number }): Date
   r.setDate(r.getDate() + diff)
   return endOfDay(r)
 }
+
+/**
+ * Converts milliseconds to a human-readable duration string.
+ *
+ * Shows up to 2 largest non-zero units. Supports English ('en') and
+ * Indonesian ('id') locales. Negative values get an "ago" suffix.
+ *
+ * @param ms - Duration in milliseconds.
+ * @param locale - Locale string ('en' by default, 'id' supported).
+ * @returns A human-readable duration string.
+ *
+ * @example
+ * humanizeDuration(60000) // "1 minute"
+ * humanizeDuration(7200000) // "2 hours"
+ * humanizeDuration(86400000) // "1 day"
+ * humanizeDuration(90061000) // "1 day 1 hour 1 minute 1 second"
+ * humanizeDuration(90061000, 'id') // "1 hari 1 jam 1 menit 1 detik"
+ * humanizeDuration(-60000) // "1 minute ago"
+ */
+export function humanizeDuration(ms: number, locale?: string): string {
+  const loc = locale ?? 'en'
+  const labels = LOCALE_LABELS[loc] ?? LOCALE_LABELS.en!
+  const abs = Math.abs(ms)
+
+  const days = Math.floor(abs / MS_IN_DAY)
+  const hours = Math.floor((abs % MS_IN_DAY) / MS_IN_HOUR)
+  const minutes = Math.floor((abs % MS_IN_HOUR) / MS_IN_MINUTE)
+  const seconds = Math.floor((abs % MS_IN_MINUTE) / MS_IN_SECOND)
+
+  const parts: [number, keyof LocaleLabels][] = [
+    [days, 'days'],
+    [hours, 'hours'],
+    [minutes, 'minutes'],
+    [seconds, 'seconds'],
+  ]
+
+  const shown: string[] = []
+  for (const [count, key] of parts) {
+    if (count > 0) {
+      const label = count === 1 ? labels[key].single : labels[key].plural
+      shown.push(`${count} ${label}`)
+    }
+    if (shown.length === 2) break
+  }
+
+  if (shown.length === 0) {
+    const label = labels.seconds.plural
+    shown.push(`0 ${label}`)
+  }
+
+  const result = shown.join(' ')
+  return ms < 0 ? `${result} ${loc === 'id' ? 'yang lalu' : 'ago'}` : result
+}
+
+function getNthWeekdayOfMonth(year: number, month: number, weekday: number, n: number): Date {
+  const first = new Date(year, month, 1)
+  const diff = (weekday - first.getDay() + 7) % 7
+  const day = 1 + diff + (n - 1) * 7
+  return new Date(year, month, day)
+}
+
+function getLastWeekdayOfMonth(year: number, month: number, weekday: number): Date {
+  const last = new Date(year, month + 1, 0)
+  const diff = (last.getDay() - weekday + 7) % 7
+  return new Date(year, month, last.getDate() - diff)
+}
+
+const INDONESIAN_HOLIDAYS: Record<number, [number, number]> = {
+  2023: [1, 22],
+  2024: [2, 10],
+  2025: [1, 29],
+  2026: [2, 17],
+  2027: [2, 6],
+  2028: [1, 26],
+  2029: [2, 13],
+  2030: [2, 3],
+}
+
+const NYEPI_DATES: Record<number, [number, number]> = {
+  2023: [3, 22],
+  2024: [3, 11],
+  2025: [3, 29],
+  2026: [3, 19],
+  2027: [3, 8],
+  2028: [3, 26],
+  2029: [3, 15],
+  2030: [3, 5],
+}
+
+const EID_FITR_DATES: Record<number, [number, number]> = {
+  2023: [4, 22],
+  2024: [4, 10],
+  2025: [3, 31],
+  2026: [3, 20],
+  2027: [3, 9],
+  2028: [2, 26],
+  2029: [2, 14],
+  2030: [2, 3],
+}
+
+const MAWLID_DATES: Record<number, [number, number]> = {
+  2023: [9, 28],
+  2024: [9, 16],
+  2025: [9, 5],
+  2026: [8, 26],
+  2027: [8, 15],
+  2028: [8, 4],
+  2029: [7, 24],
+  2030: [7, 14],
+}
+
+const ISRA_MIRAJ_DATES: Record<number, [number, number]> = {
+  2023: [2, 18],
+  2024: [2, 8],
+  2025: [1, 27],
+  2026: [1, 16],
+  2027: [1, 6],
+  2028: [12, 26],
+  2029: [12, 15],
+  2030: [12, 5],
+}
+
+function approximateEaster(year: number): Date {
+  const a = year % 19
+  const b = Math.floor(year / 100)
+  const c = year % 100
+  const d = Math.floor(b / 4)
+  const e = b % 4
+  const f = Math.floor((b + 8) / 25)
+  const g = Math.floor((b - f + 1) / 3)
+  const h = (19 * a + b - d - g + 15) % 30
+  const i = Math.floor(c / 4)
+  const k = c % 4
+  const l = (32 + 2 * e + 2 * i - h - k) % 7
+  const m = Math.floor((a + 11 * h + 22 * l) / 451)
+  const month = Math.floor((h + l - 7 * m + 114) / 31)
+  const day = ((h + l - 7 * m + 114) % 31) + 1
+  return new Date(year, month - 1, day)
+}
+
+/**
+ * Returns a static list of common public holidays for a given country and year.
+ *
+ * Supported countries:
+ * - `'ID'` — Indonesia (public and observance holidays)
+ * - `'US'` — United States (federal public holidays)
+ *
+ * Moveable holidays use approximate dates. Unsupported countries return an
+ * empty array.
+ *
+ * @param country - ISO 3166-1 alpha-2 country code.
+ * @param year - The year to get holidays for.
+ * @returns An array of holiday objects with name, date, and type.
+ *
+ * @example
+ * getHolidays('ID', 2024)
+ * getHolidays('US', 2024)
+ */
+export function getHolidays(
+  country: string,
+  year: number,
+): { name: string; date: Date; type: 'public' | 'observance' }[] {
+  if (country === 'ID') {
+    const chinese = INDONESIAN_HOLIDAYS[year] ?? [1, 29]
+    const nyepi = NYEPI_DATES[year] ?? [3, 20]
+    const fitr = EID_FITR_DATES[year] ?? [4, 10]
+    const mawlid = MAWLID_DATES[year] ?? [9, 15]
+    const isra = ISRA_MIRAJ_DATES[year] ?? [2, 8]
+    const fitrDate = new Date(year, fitr[0] - 1, fitr[1])
+    const adha = new Date(fitrDate.getTime())
+    adha.setDate(adha.getDate() + 70)
+    const easter = approximateEaster(year)
+    const goodFriday = new Date(easter.getTime())
+    goodFriday.setDate(goodFriday.getDate() - 2)
+
+    return [
+      { name: 'Tahun Baru Masehi', date: new Date(year, 0, 1), type: 'public' },
+      { name: 'Tahun Baru Imlek', date: new Date(year, chinese[0] - 1, chinese[1]), type: 'public' },
+      { name: 'Hari Raya Nyepi', date: new Date(year, nyepi[0] - 1, nyepi[1]), type: 'public' },
+      { name: 'Wafat Yesus Kristus', date: goodFriday, type: 'public' },
+      { name: 'Hari Raya Idul Fitri', date: fitrDate, type: 'public' },
+      { name: 'Hari Raya Idul Adha', date: adha, type: 'public' },
+      { name: 'Hari Kemerdekaan RI', date: new Date(year, 7, 17), type: 'public' },
+      { name: 'Maulid Nabi Muhammad', date: new Date(year, mawlid[0] - 1, mawlid[1]), type: 'public' },
+      { name: 'Isra Miraj', date: new Date(year, isra[0] - 1, isra[1]), type: 'public' },
+      { name: 'Hari Raya Natal', date: new Date(year, 11, 25), type: 'public' },
+    ]
+  }
+
+  if (country === 'US') {
+    return [
+      { name: "New Year's Day", date: new Date(year, 0, 1), type: 'public' },
+      { name: 'Martin Luther King Jr. Day', date: getNthWeekdayOfMonth(year, 0, 1, 3), type: 'public' },
+      { name: "Presidents' Day", date: getNthWeekdayOfMonth(year, 1, 1, 3), type: 'public' },
+      { name: 'Memorial Day', date: getLastWeekdayOfMonth(year, 4, 1), type: 'public' },
+      { name: 'Independence Day', date: new Date(year, 6, 4), type: 'public' },
+      { name: 'Labor Day', date: getNthWeekdayOfMonth(year, 8, 1, 1), type: 'public' },
+      { name: 'Thanksgiving', date: getNthWeekdayOfMonth(year, 10, 4, 4), type: 'public' },
+      { name: 'Christmas Day', date: new Date(year, 11, 25), type: 'public' },
+    ]
+  }
+
+  return []
+}
